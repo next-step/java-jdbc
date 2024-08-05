@@ -21,14 +21,17 @@ public class UserDao {
     private static final Logger log = LoggerFactory.getLogger(UserDao.class);
 
     private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public UserDao(final DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     public UserDao(final JdbcTemplate jdbcTemplate) {
         this.dataSource = null;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public void insert(final User user) {
@@ -65,64 +68,33 @@ public class UserDao {
     public List<User> findAll() {
         final var sql = "select id, account, password, email from users";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery();
-        ) {
-            List<User> users = new ArrayList<>();
-            while (rs.next()) {
-                users.add(new User(
-                                rs.getLong(1),
-                                rs.getString(2),
-                                rs.getString(3),
-                                rs.getString(4)
-                        )
-                );
-            }
-            return users;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return jdbcTemplate.query(sql, rs -> new User(
+                rs.getLong("id"),
+                rs.getString("account"),
+                rs.getString("password"),
+                rs.getString("email")
+        ));
     }
 
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql);
-        ) {
-            pstmt.setLong(1, id);
-            return execute(pstmt);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return jdbcTemplate.queryForObject(sql, rs -> new User(
+                rs.getLong("id"),
+                rs.getString("account"),
+                rs.getString("password"),
+                rs.getString("email")
+        ), id).orElseThrow(() -> new IllegalArgumentException("not found entity"));
     }
 
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql);
-        ) {
-            pstmt.setString(1, account);
-            return execute(pstmt);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private User execute(PreparedStatement pstmt) {
-        try (ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                return new User(
-                        rs.getLong(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4));
-            }
-            return null;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return jdbcTemplate.queryForObject(sql, rs -> new User(
+                rs.getLong("id"),
+                rs.getString("account"),
+                rs.getString("password"),
+                rs.getString("email")
+        ), account).orElseThrow(() -> new IllegalArgumentException("not found entity"));
     }
 }
