@@ -30,6 +30,17 @@ public class JdbcTemplate {
         return executeQuery(sql, resultSet -> parseToObject(rowMapper, resultSet), args);
     }
 
+    public int update(String sql, Object... args) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            prepareArguments(preparedStatement, args);
+
+            return preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private <T> T executeQuery(String sql, ResultSetParser<T> resultSetParser, Object... args) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

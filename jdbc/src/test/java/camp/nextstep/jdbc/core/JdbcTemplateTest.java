@@ -91,6 +91,16 @@ class JdbcTemplateTest {
         assertThat(actual).isEmpty();
     }
 
+    @Test
+    void 쿼리를_받아_preparedStatement를_실행한다() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement("update member set name = ? where id = ?")).thenReturn(preparedStatement);
+        when(preparedStatement.executeUpdate()).thenReturn(1);
+
+        int actual = jdbcTemplate.update("update member set name = ? where id = ?", "young jin", 1L);
+        assertThat(actual).isEqualTo(1);
+    }
+
     private record Member(Long id, String name) {
     }
 }
