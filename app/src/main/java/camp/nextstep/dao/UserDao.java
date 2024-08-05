@@ -106,17 +106,18 @@ public class UserDao {
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql);
+        ) {
             pstmt.setLong(1, id);
-            rs = pstmt.executeQuery();
+            return execute(pstmt);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-            log.debug("query : {}", sql);
-
+    private static User execute(PreparedStatement pstmt) {
+        try (ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
                 return new User(
                         rs.getLong(1),
@@ -126,26 +127,7 @@ public class UserDao {
             }
             return null;
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException ignored) {}
-
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (SQLException ignored) {}
-
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ignored) {}
         }
     }
 
