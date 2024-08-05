@@ -18,3 +18,20 @@
 ## 학습 테스트
 1. [ConnectionPool](study/src/test/java/connectionpool)
 2. [Transaction](study/src/test/java/transaction)
+
+## 1단계 - JDBC 라이브러리 구현하기
+- 쿼리가 동작하도록 수정한다
+
+- findByAccount
+```mysql
+select id, account, password, email from users where account = ? 
+```
+- findAll
+  - resultSet에서 next로 나오는 모든 유저를 list로 반환한다.
+```mysql
+select id, account, password, email from users 
+```
+- update
+```mysql
+update users set account = ?, password = ?, email = ? where id = ?
+```
