@@ -18,3 +18,9 @@
 ## 학습 테스트
 1. [ConnectionPool](study/src/test/java/connectionpool)
 2. [Transaction](study/src/test/java/transaction)
+
+
+## 요구사항 정리
+### 🚀 1단계 - JDBC 라이브러리 구현하기
+- [] SQL 쿼리 작성, 쿼리에 전달할 인자, Select 구문일 경우 조회 결과를 추출하는 것만 집중할 수 있어야 한다.
+  - [] 쿼리만 작성해서 jdbcTemplate에 넘기면 실행해주어야 한다
