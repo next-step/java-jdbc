@@ -41,6 +41,24 @@ class JdbcTemplateTest {
     }
 
     @Test
+    void 파라미터를_받아_List에_데이터를_담아_반환한다() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement("select id, name from member where name = ?")).thenReturn(preparedStatement);
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+
+        when(resultSet.next()).thenReturn(true).thenReturn(false);
+        when(resultSet.getLong("id")).thenReturn(1L);
+        when(resultSet.getString("name")).thenReturn("jin young");
+
+        List<Member> actual = jdbcTemplate.query(
+                "select id, name from member where name = ?",
+                rs -> new Member(rs.getLong("id"), rs.getString("name")),
+                "jin young"
+        );
+        assertThat(actual).containsExactly(new Member(1L, "jin young"));
+    }
+
+    @Test
     void 쿼리를_실행한_ResultSet값을_매핑하여_반환한다() throws SQLException {
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement("select id, name from member where id = ?")).thenReturn(preparedStatement);
@@ -50,7 +68,7 @@ class JdbcTemplateTest {
         when(resultSet.getLong("id")).thenReturn(1L);
         when(resultSet.getString("name")).thenReturn("jin young");
 
-        Optional<Member> actual = jdbcTemplate.query(
+        Optional<Member> actual = jdbcTemplate.queryForObject(
                 "select id, name from member where id = ?",
                 rs -> new Member(rs.getLong("id"), rs.getString("name")),
                 1
@@ -65,7 +83,7 @@ class JdbcTemplateTest {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(false);
 
-        Optional<Member> actual = jdbcTemplate.query(
+        Optional<Member> actual = jdbcTemplate.queryForObject(
                 "select id, name from member where id = ?",
                 rs -> new Member(rs.getLong("id"), rs.getString("name")),
                 1
