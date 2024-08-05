@@ -116,7 +116,20 @@ public class UserDao {
         }
     }
 
-    private static User execute(PreparedStatement pstmt) {
+    public User findByAccount(final String account) {
+        final var sql = "select id, account, password, email from users where account = ?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql);
+        ) {
+            pstmt.setString(1, account);
+            return execute(pstmt);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private User execute(PreparedStatement pstmt) {
         try (ResultSet rs = pstmt.executeQuery()) {
             if (rs.next()) {
                 return new User(
@@ -129,10 +142,5 @@ public class UserDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public User findByAccount(final String account) {
-        // todo
-        return null;
     }
 }
