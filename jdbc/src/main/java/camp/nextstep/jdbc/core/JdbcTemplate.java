@@ -26,9 +26,7 @@ public class JdbcTemplate {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            for (int i = 1; i <= args.length; i++) {
-                preparedStatement.setObject(i, args[i - 1]);
-            }
+            prepareArguments(args, preparedStatement);
             List<T> result = new ArrayList<>();
             while (resultSet.next()) {
                 result.add(rowMapper.mapRow(resultSet));
@@ -42,9 +40,7 @@ public class JdbcTemplate {
     public <T> Optional<T> queryForObject(String sql, RowMapper<T> rowMapper, Object... args) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            for (int i = 1; i <= args.length; i++) {
-                preparedStatement.setObject(i, args[i - 1]);
-            }
+            prepareArguments(args, preparedStatement);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     return Optional.of(rowMapper.mapRow(resultSet));
@@ -53,6 +49,12 @@ public class JdbcTemplate {
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void prepareArguments(Object[] args, PreparedStatement preparedStatement) throws SQLException {
+        for (int i = 1; i <= args.length; i++) {
+            preparedStatement.setObject(i, args[i - 1]);
         }
     }
 }
