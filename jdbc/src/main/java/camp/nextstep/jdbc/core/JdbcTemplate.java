@@ -23,22 +23,15 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
-        return executeQuery(sql, resultSet -> parse(rowMapper, resultSet), args);
+        return executeQuery(sql, preparedStatement -> parse(rowMapper, preparedStatement), args);
     }
 
     public <T> Optional<T> queryForObject(String sql, RowMapper<T> rowMapper, Object... args) {
-        return executeQuery(sql, resultSet -> parseToObject(rowMapper, resultSet), args);
+        return executeQuery(sql, preparedStatement -> parseToObject(rowMapper, preparedStatement), args);
     }
 
     public int update(String sql, Object... args) {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            prepareArguments(preparedStatement, args);
-
-            return preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return executeQuery(sql, PreparedStatement::executeUpdate, args);
     }
 
     private <T> T executeQuery(String sql, ResultSetParser<T> resultSetParser, Object... args) {
@@ -46,7 +39,7 @@ public class JdbcTemplate {
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             prepareArguments(preparedStatement, args);
 
-            return convertResultSet(preparedStatement, resultSetParser);
+            return resultSetParser.parse(preparedStatement);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -58,24 +51,22 @@ public class JdbcTemplate {
         }
     }
 
-    private <T> T convertResultSet(PreparedStatement preparedStatement, ResultSetParser<T> resultSetParser) throws SQLException {
+    private <T> List<T> parse(RowMapper<T> rowMapper, PreparedStatement preparedStatement) throws SQLException {
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
-            return resultSetParser.parse(resultSet);
+            List<T> result = new ArrayList<>();
+            while (resultSet.next()) {
+                result.add(rowMapper.mapRow(resultSet));
+            }
+            return result;
         }
     }
 
-    private <T> List<T> parse(RowMapper<T> rowMapper, ResultSet resultSet) throws SQLException {
-        List<T> result = new ArrayList<>();
-        while (resultSet.next()) {
-            result.add(rowMapper.mapRow(resultSet));
+    private <T> Optional<T> parseToObject(RowMapper<T> rowMapper, PreparedStatement preparedStatement) throws SQLException {
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            if (resultSet.next()) {
+                return Optional.of(rowMapper.mapRow(resultSet));
+            }
+            return Optional.empty();
         }
-        return result;
-    }
-
-    private <T> Optional<T> parseToObject(RowMapper<T> rowMapper, ResultSet resultSet) throws SQLException {
-        if (resultSet.next()) {
-            return Optional.of(rowMapper.mapRow(resultSet));
-        }
-        return Optional.empty();
     }
 }
