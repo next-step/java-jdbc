@@ -47,3 +47,8 @@ update users set account = ?, password = ?, email = ? where id = ?
     - 반환되는 값이 Object인 경우 객체에 담아서 내보내며 값이 없는 경우 empty가 반환된다.
   - update
     - sql과 파라미터를 받아 실행한다
+
+  - PreparedStatementParser
+    - connection을 받아 preparedStatement를 생성하고 이를 executeQuery 하는 처리를 추상화
+  - ResultSet
+    - PreparedStatement로 생성된 결과인 ResultSet을 rowmapper로 인스턴스화하는 처리를 추상화
