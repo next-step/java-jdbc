@@ -34,12 +34,12 @@ public class JdbcTemplate {
         return executeQuery(sql, PreparedStatement::executeUpdate, args);
     }
 
-    private <T> T executeQuery(String sql, ResultSetParser<T> resultSetParser, Object... args) {
+    private <T> T executeQuery(String sql, PreparedStatementParser<T> preparedStatementParser, Object... args) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             prepareArguments(preparedStatement, args);
 
-            return resultSetParser.parse(preparedStatement);
+            return preparedStatementParser.parse(preparedStatement);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -51,22 +51,38 @@ public class JdbcTemplate {
         }
     }
 
-    private <T> List<T> parse(RowMapper<T> rowMapper, PreparedStatement preparedStatement) throws SQLException {
-        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+    private <T> List<T> parse(RowMapper<T> rowMapper, PreparedStatement preparedStatement) {
+        return parseResultSet(parse(rowMapper), preparedStatement);
+    }
+
+    private <T> ResultSetParser<List<T>> parse(RowMapper<T> rowMapper) {
+        return resultSet -> {
             List<T> result = new ArrayList<>();
             while (resultSet.next()) {
                 result.add(rowMapper.mapRow(resultSet));
             }
             return result;
-        }
+        };
     }
 
-    private <T> Optional<T> parseToObject(RowMapper<T> rowMapper, PreparedStatement preparedStatement) throws SQLException {
-        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+    private <T> Optional<T> parseToObject(RowMapper<T> rowMapper, PreparedStatement preparedStatement) {
+        return parseResultSet(parseToObject(rowMapper), preparedStatement);
+    }
+
+    private <T> ResultSetParser<Optional<T>> parseToObject(RowMapper<T> rowMapper) {
+        return resultSet -> {
             if (resultSet.next()) {
                 return Optional.of(rowMapper.mapRow(resultSet));
             }
             return Optional.empty();
+        };
+    }
+
+    private <T> T parseResultSet(ResultSetParser<T> resultSetParser, PreparedStatement preparedStatement) {
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            return resultSetParser.parse(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
