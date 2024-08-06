@@ -1,5 +1,8 @@
 package camp.nextstep.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.dao.UserDao;
@@ -8,13 +11,9 @@ import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-@Disabled
+//@Disabled
 class UserServiceTest {
 
     private JdbcTemplate jdbcTemplate;
