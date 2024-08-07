@@ -76,7 +76,7 @@ public class JdbcTemplate {
         }
     }
 
-    private <T> List<T> parse(RowMapper<T> rowMapper, PreparedStatement preparedStatement) {
+    private <T> List<T> parse(RowMapper<T> rowMapper, PreparedStatement preparedStatement) throws SQLException {
         return parseResultSet(parse(rowMapper), preparedStatement);
     }
 
@@ -90,7 +90,7 @@ public class JdbcTemplate {
         };
     }
 
-    private <T> Optional<T> parseToObject(RowMapper<T> rowMapper, PreparedStatement preparedStatement) {
+    private <T> Optional<T> parseToObject(RowMapper<T> rowMapper, PreparedStatement preparedStatement) throws SQLException {
         return parseResultSet(parseToObject(rowMapper), preparedStatement);
     }
 
@@ -103,11 +103,9 @@ public class JdbcTemplate {
         };
     }
 
-    private <T> T parseResultSet(ResultSetParser<T> resultSetParser, PreparedStatement preparedStatement) {
+    private <T> T parseResultSet(ResultSetParser<T> resultSetParser, PreparedStatement preparedStatement) throws SQLException {
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
             return resultSetParser.parse(resultSet);
-        } catch (SQLException e) {
-            throw new DataAccessException(e);
         }
     }
 }
