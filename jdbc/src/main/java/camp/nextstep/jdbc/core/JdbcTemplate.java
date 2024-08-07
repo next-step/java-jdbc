@@ -1,6 +1,7 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
+import camp.nextstep.dao.QueryFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,9 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static camp.nextstep.util.StringUtils.countContainSequence;
+
 public class JdbcTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
+    private static final String QUERY_PLACEHOLDER = "?";
 
     private final DataSource dataSource;
 
@@ -24,15 +28,24 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
+        validateSqlArguments(sql, args);
         return executeQuery(sql, preparedStatement -> parse(rowMapper, preparedStatement), args);
     }
 
     public <T> Optional<T> queryForObject(String sql, RowMapper<T> rowMapper, Object... args) {
+        validateSqlArguments(sql, args);
         return executeQuery(sql, preparedStatement -> parseToObject(rowMapper, preparedStatement), args);
     }
 
     public int update(String sql, Object... args) {
+        validateSqlArguments(sql, args);
         return executeQuery(sql, PreparedStatement::executeUpdate, args);
+    }
+
+    private void validateSqlArguments(String sql, Object... args) {
+        if (countContainSequence(sql, QUERY_PLACEHOLDER) != args.length) {
+            throw new QueryFormatException("sql의 placeholder 수에 맞는 파라미터가 필요합니다.");
+        }
     }
 
     private <T> T executeQuery(String sql, PreparedStatementParser<T> preparedStatementParser, Object... args) {
