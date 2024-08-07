@@ -4,6 +4,7 @@ import camp.nextstep.dao.QueryFormatException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.sql.DataSource;
@@ -32,6 +33,14 @@ class JdbcTemplateTest {
 
     @Nested
     class query {
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        void 쿼리가_빈_문자열이_들어가는_경우_예외가_발생한다(String sql) {
+            assertThatThrownBy(() -> jdbcTemplate.query(sql, rowMapper))
+                    .isInstanceOf(QueryFormatException.class)
+                    .hasMessage("쿼리에는 문자열이 필수로 입력되어야합니다.");
+        }
 
         @ParameterizedTest
         @ValueSource(strings = {"1", "1,jinyoung,nextstep"})
@@ -77,6 +86,14 @@ class JdbcTemplateTest {
     class queryForObject {
 
         @ParameterizedTest
+        @NullAndEmptySource
+        void 쿼리가_빈_문자열이_들어가는_경우_예외가_발생한다(String sql) {
+            assertThatThrownBy(() -> jdbcTemplate.queryForObject(sql, rowMapper))
+                    .isInstanceOf(QueryFormatException.class)
+                    .hasMessage("쿼리에는 문자열이 필수로 입력되어야합니다.");
+        }
+
+        @ParameterizedTest
         @ValueSource(strings = {"1", "1,jinyoung,nextstep"})
         void 쿼리의_placeholder만큼_매개변수가_없으면_예외가_발생한다(String givenArgs) {
             String sql = "select id, name from users where id = ? and name = ?";
@@ -119,6 +136,14 @@ class JdbcTemplateTest {
 
     @Nested
     class update {
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        void 쿼리가_빈_문자열이_들어가는_경우_예외가_발생한다(String sql) {
+            assertThatThrownBy(() -> jdbcTemplate.update(sql, rowMapper))
+                    .isInstanceOf(QueryFormatException.class)
+                    .hasMessage("쿼리에는 문자열이 필수로 입력되어야합니다.");
+        }
 
         @ParameterizedTest
         @ValueSource(strings = {"1", "jinyoung,1,nextstep"})

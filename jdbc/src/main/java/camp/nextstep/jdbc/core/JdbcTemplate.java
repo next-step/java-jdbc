@@ -28,18 +28,29 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
-        validateSqlArguments(sql, args);
+        validateSql(sql, args);
         return executeQuery(sql, preparedStatement -> parse(rowMapper, preparedStatement), args);
     }
 
     public <T> Optional<T> queryForObject(String sql, RowMapper<T> rowMapper, Object... args) {
-        validateSqlArguments(sql, args);
+        validateSql(sql, args);
         return executeQuery(sql, preparedStatement -> parseToObject(rowMapper, preparedStatement), args);
     }
 
     public int update(String sql, Object... args) {
-        validateSqlArguments(sql, args);
+        validateSql(sql, args);
         return executeQuery(sql, PreparedStatement::executeUpdate, args);
+    }
+
+    private void validateSql(String sql, Object... args) {
+        validateSqlBlank(sql);
+        validateSqlArguments(sql, args);
+    }
+
+    private void validateSqlBlank(String sql) {
+        if (sql == null || sql.isBlank()) {
+            throw new QueryFormatException("쿼리에는 문자열이 필수로 입력되어야합니다.");
+        }
     }
 
     private void validateSqlArguments(String sql, Object... args) {
