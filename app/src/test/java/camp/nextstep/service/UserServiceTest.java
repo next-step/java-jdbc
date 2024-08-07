@@ -8,6 +8,7 @@ import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
+import camp.nextstep.dto.UserResultSetHandler;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ class UserServiceTest {
         final var myConfiguration = new MyConfiguration();
         final var dataSource = myConfiguration.dataSource();
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.userDao = new UserDao(jdbcTemplate);
+        this.userDao = new UserDao(jdbcTemplate, new UserResultSetHandler());
 
         DatabasePopulatorUtils.execute(dataSource);
         final var user = new User("gugu", "password", "hkkang@woowahan.com");

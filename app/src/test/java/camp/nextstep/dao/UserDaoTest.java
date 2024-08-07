@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
+import camp.nextstep.dto.UserResultSetHandler;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +20,7 @@ class UserDaoTest {
         final var dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
 
-        userDao = new UserDao(new JdbcTemplate(dataSource));
+        userDao = new UserDao(new JdbcTemplate(dataSource), new UserResultSetHandler());
         final var user = new User("gugu", "password", "hkkang@woowahan.com");
         userDao.insert(user);
     }

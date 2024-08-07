@@ -1,6 +1,7 @@
 package camp.nextstep.dao;
 
 import camp.nextstep.domain.User;
+import camp.nextstep.dto.UserResultSetHandler;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
@@ -16,10 +17,12 @@ public class UserDao {
     private static final Logger log = LoggerFactory.getLogger(UserDao.class);
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserResultSetHandler userResultSetHandler;
 
     @Autowired
-    public UserDao(final JdbcTemplate jdbcTemplate) {
+    public UserDao(final JdbcTemplate jdbcTemplate, UserResultSetHandler userResultSetHandler) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userResultSetHandler = userResultSetHandler;
     }
 
     public void insert(final User user) {
@@ -34,35 +37,17 @@ public class UserDao {
 
     public List<User> findAll() {
         String sql = "select id, account, password, email from users";
-        return jdbcTemplate.selectAll(sql, (rs) -> {
-            try {
-                return createUser(rs);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return jdbcTemplate.selectAll(sql, userResultSetHandler);
     }
 
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
-        return jdbcTemplate.selectOne(sql, List.of(id), (rs) -> {
-            try {
-                return createUser(rs);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return jdbcTemplate.selectOne(sql, List.of(id), userResultSetHandler);
     }
 
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
-        return jdbcTemplate.selectOne(sql, List.of(account), (rs) -> {
-            try {
-                return createUser(rs);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return jdbcTemplate.selectOne(sql, List.of(account), userResultSetHandler);
     }
 
     private User createUser(ResultSet rs) throws SQLException {
