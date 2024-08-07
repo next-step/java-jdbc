@@ -52,3 +52,6 @@ update users set account = ?, password = ?, email = ? where id = ?
     - connection을 받아 preparedStatement를 생성하고 이를 executeQuery 하는 처리를 추상화
   - ResultSet
     - PreparedStatement로 생성된 결과인 ResultSet을 rowmapper로 인스턴스화하는 처리를 추상화
+
+- StringUtils
+  - 입력된 문자열에 요청된 sequence가 몇개있는지 계산한다
