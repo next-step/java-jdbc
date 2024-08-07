@@ -34,7 +34,7 @@ public class UserDao {
 
     public List<User> findAll() {
         String sql = "select id, account, password, email from users";
-        return jdbcTemplate.select(sql, (rs) -> {
+        return jdbcTemplate.selectAll(sql, (rs) -> {
             try {
                 return createUser(rs);
             } catch (SQLException e) {

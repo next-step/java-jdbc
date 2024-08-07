@@ -22,78 +22,70 @@ public class JdbcTemplate {
     public void update(String sql, List<?> params) {
         printLog(sql, params);
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
             setUpParameters(pstmt, params);
-
             pstmt.executeUpdate();
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        } finally {
-            postProcessing(pstmt);
-            postProcessing(conn);
         }
     }
 
     public <T> T selectOne(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
         printLog(sql, params);
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
             setUpParameters(pstmt, params);
 
-            rs = pstmt.executeQuery();
-            if (!rs.next()) {
-                return null;
-            }
-
-            return resultSetHandler.handle(rs);
+            return getOneResult(resultSetHandler, pstmt);
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        } finally {
-            postProcessing(rs);
-            postProcessing(pstmt);
-            postProcessing(conn);
         }
     }
 
-    public <T> List<T> select(String sql, ResultSetHandler<T> resultSetHandler) {
-        return select(sql, List.of(), resultSetHandler);
+    private <T> T getOneResult(ResultSetHandler<T> resultSetHandler, PreparedStatement pstmt) throws SQLException {
+        try (ResultSet rs = pstmt.executeQuery()) {
+            rs.last();
+            int rowNumber = rs.getRow();
+            if (rowNumber == 1) {
+                return resultSetHandler.handle(rs);
+            }
+
+            if (rowNumber < 1) {
+                return null;
+            }
+
+            throw new NotSingleResultSetException();
+        }
     }
 
-    public <T> List<T> select(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
+    public <T> List<T> selectAll(String sql, ResultSetHandler<T> resultSetHandler) {
+        return selectAll(sql, List.of(), resultSetHandler);
+    }
+
+    public <T> List<T> selectAll(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
         printLog(sql, params);
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
+        try(Connection conn = dataSource.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
             setUpParameters(pstmt, params);
+            return getMultipleResults(resultSetHandler, pstmt);
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
 
-            rs = pstmt.executeQuery();
+    private <T> List<T> getMultipleResults(ResultSetHandler<T> resultSetHandler, PreparedStatement pstmt) throws SQLException {
+        try (ResultSet rs = pstmt.executeQuery()) {
             List<T> results = new ArrayList<>();
             while (rs.next()) {
                 results.add(resultSetHandler.handle(rs));
             }
             return results;
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        } finally {
-            postProcessing(rs);
-            postProcessing(pstmt);
-            postProcessing(conn);
         }
     }
 
@@ -104,31 +96,6 @@ public class JdbcTemplate {
     private void setUpParameters(PreparedStatement pstmt, List<?> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             pstmt.setObject(i + 1, params.get(i));
-        }
-    }
-
-    private void postProcessing(Connection conn) {
-        try {
-            if (conn != null) {
-                conn.close();
-            }
-        } catch (SQLException ignored) {}
-    }
-
-    private void postProcessing(ResultSet rs) {
-        try {
-            if (rs != null) {
-                rs.close();
-            }
-        } catch (SQLException ignored) {}
-    }
-
-    private void postProcessing(PreparedStatement pstmt) {
-        try {
-            if (pstmt != null) {
-                pstmt.close();
-            }
-        } catch (SQLException ignored) {
         }
     }
 }
