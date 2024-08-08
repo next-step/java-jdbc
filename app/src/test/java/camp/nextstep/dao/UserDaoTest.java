@@ -1,12 +1,14 @@
 package camp.nextstep.dao;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
+import camp.nextstep.dto.UserResultSetHandler;
+import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UserDaoTest {
 
@@ -18,7 +20,7 @@ class UserDaoTest {
         final var dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
 
-        userDao = new UserDao(dataSource);
+        userDao = new UserDao(new JdbcTemplate(dataSource), new UserResultSetHandler());
         final var user = new User("gugu", "password", "hkkang@woowahan.com");
         userDao.insert(user);
     }
@@ -27,6 +29,7 @@ class UserDaoTest {
     void findAll() {
         final var users = userDao.findAll();
 
+        assertThat(users).hasSize(1);
         assertThat(users).isNotEmpty();
     }
 
@@ -48,7 +51,7 @@ class UserDaoTest {
     @Test
     void insert() {
         final var account = "insert-gugu";
-        final var user = new User(account, "password", "hkkang@woowahan.com");
+        final var user = new User(account, "password1", "hkkang@woowahan.com1");
         userDao.insert(user);
 
         final var actual = userDao.findById(2L);
