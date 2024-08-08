@@ -59,3 +59,11 @@ update users set account = ?, password = ?, email = ? where id = ?
 
 - StringUtils
   - 입력된 문자열에 요청된 sequence가 몇개있는지 계산한다
+
+## 2단계 - 리팩터링
+- ResultSetSetter
+  - PreparedStatement로 ResultSet을 만들어 객체로 파싱하는 역할을 가져간다
+- PreparedStatementSetter
+  - dataSource로 connection을 가져와 ParparedStementParser로 실행하는 역할을 가져간다
+- JdbcTemplate
+  - 에러 발생 시 발생한 에러에 대한 로그를 남긴다
