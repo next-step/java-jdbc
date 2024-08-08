@@ -1,13 +1,17 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class DefaultPreparedStatementSetter implements PreparedStatementSetter  {
+public class DefaultPreparedStatementSetter implements PreparedStatementSetter {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultPreparedStatementSetter.class);
 
     private final DataSource dataSource;
 
@@ -23,6 +27,7 @@ public class DefaultPreparedStatementSetter implements PreparedStatementSetter  
 
             return preparedStatementParser.parse(preparedStatement);
         } catch (SQLException e) {
+            log.warn("쿼리 실행에 오류가 발생했습니다. sql : {}", sql);
             throw new DataAccessException(e);
         }
     }
