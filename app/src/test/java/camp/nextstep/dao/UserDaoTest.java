@@ -2,6 +2,7 @@ package camp.nextstep.dao;
 
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
+import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,10 +18,9 @@ class UserDaoTest {
         final var myConfiguration = new MyConfiguration();
         final var dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
+        final var jdbcTemplate = new JdbcTemplate(dataSource);
 
-        userDao = new UserDao(dataSource);
-        final var user = new User("gugu", "password", "hkkang@woowahan.com");
-        userDao.insert(user);
+        userDao = new UserDao(jdbcTemplate);
     }
 
     @Test
