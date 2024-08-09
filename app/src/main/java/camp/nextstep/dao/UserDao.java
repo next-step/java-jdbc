@@ -5,8 +5,6 @@ import camp.nextstep.dto.UserResultSetHandler;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +46,5 @@ public class UserDao {
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
         return jdbcTemplate.selectOne(sql, List.of(account), userResultSetHandler);
-    }
-
-    private User createUser(ResultSet rs) throws SQLException {
-        return new User(
-                rs.getInt("id"),
-                rs.getString("account"),
-                rs.getString("password"),
-                rs.getString("email")
-        );
     }
 }
