@@ -21,14 +21,12 @@ public class JdbcTemplate {
 
     public void update(String sql, List<?> params) {
         printLog(sql, params);
-
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             setUpParameters(pstmt, params);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
 
@@ -41,8 +39,7 @@ public class JdbcTemplate {
 
             return getOneResult(resultSetHandler, pstmt);
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
 
@@ -74,8 +71,7 @@ public class JdbcTemplate {
             setUpParameters(pstmt, params);
             return getMultipleResults(resultSetHandler, pstmt);
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
 
