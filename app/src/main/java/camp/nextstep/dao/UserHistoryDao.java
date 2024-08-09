@@ -2,6 +2,7 @@ package camp.nextstep.dao;
 
 import camp.nextstep.domain.UserHistory;
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.jdbc.core.Sql;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
 import java.util.List;
@@ -21,7 +22,9 @@ public class UserHistoryDao {
     }
 
     public void log(final UserHistory userHistory) {
-        final var sql = "insert into user_history (user_id, account, password, email, created_at, created_by) values (?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, List.of(userHistory.getUserId(), userHistory.getAccount(), userHistory.getPassword(), userHistory.getEmail(), userHistory.getCreatedAt(), userHistory.getCreatedBy()));
+        Sql sql = new Sql(
+                "insert into user_history (user_id, account, password, email, created_at, created_by) values (?, ?, ?, ?, ?, ?)",
+                List.of(userHistory.getUserId(), userHistory.getAccount(), userHistory.getPassword(), userHistory.getEmail(), userHistory.getCreatedAt(), userHistory.getCreatedBy()));
+        jdbcTemplate.update(sql);
     }
 }
