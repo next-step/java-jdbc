@@ -44,7 +44,7 @@ public class JdbcTemplate {
                 return Optional.of(resultSetHandler.handle(rs));
             }
 
-            if (rowNumber < 1) {
+            if (rowNumber == 0) {
                 return Optional.empty();
             }
 
