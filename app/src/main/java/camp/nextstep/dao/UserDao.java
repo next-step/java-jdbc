@@ -40,11 +40,13 @@ public class UserDao {
 
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
-        return jdbcTemplate.selectOne(sql, List.of(id), userResultSetHandler);
+        return jdbcTemplate.selectOne(sql, List.of(id), userResultSetHandler)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
-        return jdbcTemplate.selectOne(sql, List.of(account), userResultSetHandler);
+        return jdbcTemplate.selectOne(sql, List.of(account), userResultSetHandler)
+                .orElseThrow(() -> new UserNotFoundException(account));
     }
 }
