@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class JdbcTemplate {
         }
     }
 
-    public <T> T selectOne(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
+    public <T> Optional<T> selectOne(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
         printLog(sql, params);
 
         try (Connection conn = dataSource.getConnection();
@@ -43,16 +44,16 @@ public class JdbcTemplate {
         }
     }
 
-    private <T> T getOneResult(ResultSetHandler<T> resultSetHandler, PreparedStatement pstmt) throws SQLException {
+    private <T> Optional<T> getOneResult(ResultSetHandler<T> resultSetHandler, PreparedStatement pstmt) throws SQLException {
         try (ResultSet rs = pstmt.executeQuery()) {
             rs.last();
             int rowNumber = rs.getRow();
             if (rowNumber == 1) {
-                return resultSetHandler.handle(rs);
+                return Optional.of(resultSetHandler.handle(rs));
             }
 
             if (rowNumber < 1) {
-                return null;
+                return Optional.empty();
             }
 
             throw new NotSingleResultSetException();
