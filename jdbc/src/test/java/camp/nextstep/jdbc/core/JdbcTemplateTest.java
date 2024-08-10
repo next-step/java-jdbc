@@ -23,13 +23,13 @@ import static org.mockito.Mockito.when;
 class JdbcTemplateTest {
 
     private final DataSource dataSource = mock(DataSource.class);
-    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
-    private final RowMapper<Member> rowMapper = rs -> new Member(rs.getLong("id"), rs.getString("name"));
-
     private final Connection connection = mock(Connection.class);
     private final PreparedStatement preparedStatement = mock(PreparedStatement.class);
     private final ResultSet resultSet = mock(ResultSet.class);
+
+    private final RowMapper<Member> rowMapper = rs -> new Member(rs.getLong("id"), rs.getString("name"));
+
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
     @Nested
     class query {

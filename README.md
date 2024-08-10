@@ -45,12 +45,12 @@ update users set account = ?, password = ?, email = ? where id = ?
     - argument array를 받을 수 있으며 이를 받는 경우 PreparedStatement에 값을 할당해준다
     - 반환되는 값이 List인 경우 List에 모든 값을 담아 반환한다
     - 반환되는 값이 Object인 경우 객체에 담아서 내보내며 값이 없는 경우 empty가 반환된다.
-    - sql 쿼리에 쿼리 placeholder가 갯수만큼 없는 경우 예외가 발생한다
-    - sql이 null혹은 빈 문자열인 경우 예외가 발생한다
+    - sql 쿼리에 쿼리 placeholder가 갯수만큼 없는 경우 예외를 던진다
+    - sql이 null혹은 빈 문자열인 경우 예외를 던진다
   - update
     - sql과 파라미터를 받아 실행한다
-    - sql 쿼리에 쿼리 placeholder가 갯수만큼 없는 경우 예외가 발생한다
-    - sql이 null혹은 빈 문자열인 경우 예외가 발생한다
+    - sql 쿼리에 쿼리 placeholder가 갯수만큼 없는 경우 예외를 던진다
+    - sql이 null혹은 빈 문자열인 경우 예외를 던진다
 
   - PreparedStatementParser
     - connection을 받아 preparedStatement를 생성하고 이를 executeQuery 하는 처리를 추상화
@@ -59,3 +59,11 @@ update users set account = ?, password = ?, email = ? where id = ?
 
 - StringUtils
   - 입력된 문자열에 요청된 sequence가 몇개있는지 계산한다
+
+## 2단계 - 리팩터링
+- ResultSetSetter
+  - PreparedStatement로 ResultSet을 만들어 객체로 파싱하는 역할을 가져간다
+- PreparedStatementSetter
+  - dataSource로 connection을 가져와 ParparedStementParser로 실행하는 역할을 가져간다
+  - 에러 발생 시 발생한 에러에 대한 로그를 남긴다
+  - 에러 발생 시 checkedException을 uncheckedException으로 변환하여 던진다
