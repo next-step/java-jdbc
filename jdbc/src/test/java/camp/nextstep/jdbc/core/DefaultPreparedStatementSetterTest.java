@@ -27,15 +27,16 @@ class DefaultPreparedStatementSetterTest {
         when(connection.prepareStatement("select id, name from member where id = ?")).thenReturn(preparedStatement);
         when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
         when(parameterMetaData.getParameterCount()).thenReturn(1);
-        doNothing().when(preparedStatement).setObject(1, 1);
+        when(parameterMetaData.getParameterType(1)).thenReturn(-5);
+        doNothing().when(preparedStatement).setObject(1, 1L);
 
         Member actual = preparedStatementSetter.executeQuery(
                 "select id, name from member where id = ?",
                 preparedStatement1 -> new Member(1L, "jin young"),
-                1
+                1L
         );
         assertThat(actual).isEqualTo(new Member(1L, "jin young"));
-        verify(preparedStatement).setObject(1, 1);
+        verify(preparedStatement).setObject(1, 1L);
     }
 
     @Test
@@ -58,6 +59,19 @@ class DefaultPreparedStatementSetterTest {
         assertThatThrownBy(() -> preparedStatementSetter.executeQuery("select id, name from member id = ?", preparedStatement1 -> new Member(1L, "jin young")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("쿼리 실행에 필요한 파리미터 수와 일치하지 않습니다.");
+    }
+
+    @Test
+    void PreparedStatement에_사용되는_파라미터_타입과_불일치한_파라미터가_입력되는_경우_예외가_발생한다() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement("select id, name from member id = ?")).thenReturn(preparedStatement);
+        when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
+        when(parameterMetaData.getParameterCount()).thenReturn(1);
+        when(parameterMetaData.getParameterType(1)).thenReturn(-5);
+
+        assertThatThrownBy(() -> preparedStatementSetter.executeQuery("select id, name from member id = ?", preparedStatement1 -> new Member(1L, "jin young"), "error"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("요청된 쿼리에 파라미터 타입과 불일치한 파라미터가 입력되었습니다.");
     }
 
     private record Member(Long id, String name) {
