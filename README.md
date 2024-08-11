@@ -67,3 +67,4 @@ update users set account = ?, password = ?, email = ? where id = ?
   - dataSource로 connection을 가져와 ParparedStementParser로 실행하는 역할을 가져간다
   - 에러 발생 시 발생한 에러에 대한 로그를 남긴다
   - 에러 발생 시 checkedException을 uncheckedException으로 변환하여 던진다
+  - 요청된 쿼리 실행에 필요한 파라미터수와 불일치하는 경우 예외를 던진다

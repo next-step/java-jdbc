@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -33,8 +34,16 @@ public class DefaultPreparedStatementSetter implements PreparedStatementSetter {
     }
 
     private void prepareArguments(PreparedStatement preparedStatement, Object... args) throws SQLException {
+        validateParameterCount(preparedStatement, args);
         for (int i = 1; i <= args.length; i++) {
             preparedStatement.setObject(i, args[i - 1]);
+        }
+    }
+
+    private void validateParameterCount(PreparedStatement preparedStatement, Object... args) throws SQLException {
+        ParameterMetaData parameterMetaData = preparedStatement.getParameterMetaData();
+        if (parameterMetaData.getParameterCount() != args.length) {
+            throw new IllegalArgumentException("쿼리 실행에 필요한 파리미터 수와 일치하지 않습니다.");
         }
     }
 }
