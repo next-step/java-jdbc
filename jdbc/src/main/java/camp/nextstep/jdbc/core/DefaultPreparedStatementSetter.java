@@ -34,6 +34,18 @@ public class DefaultPreparedStatementSetter implements PreparedStatementSetter {
         }
     }
 
+    @Override
+    public <T> T executeQuery(Connection connection, String sql, PreparedStatementParser<T> preparedStatementParser, Object... args) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            prepareArguments(preparedStatement, args);
+
+            return preparedStatementParser.parse(preparedStatement);
+        } catch (SQLException e) {
+            log.warn("쿼리 실행에 오류가 발생했습니다. sql : {}", sql);
+            throw new DataAccessException("쿼리 실행 시 오류 발생", e);
+        }
+    }
+
     private void prepareArguments(PreparedStatement preparedStatement, Object... args) throws SQLException {
         ParameterMetaData parameterMetaData = preparedStatement.getParameterMetaData();
         validateParameterCount(parameterMetaData, args);
