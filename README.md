@@ -59,6 +59,10 @@ update users set account = ?, password = ?, email = ? where id = ?
 
 - StringUtils
   - 입력된 문자열에 요청된 sequence가 몇개있는지 계산한다
+- SqlType
+  - Types에 지정된 sql type value와 매핑되는 java type을 가진다
+  - 지원하지 않는 sqlTypeValue로 생성하려하면 예외를 던진다
+  - 요청된 객체가 SqlType의 java type과 일치하는지 확인한다
 
 ## 2단계 - 리팩터링
 - ResultSetSetter
