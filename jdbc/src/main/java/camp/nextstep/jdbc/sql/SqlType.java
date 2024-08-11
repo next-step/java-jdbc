@@ -25,4 +25,9 @@ public enum SqlType {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 sql 타입입니다."));
     }
+
+    public boolean isSqlType(Object object) {
+        return javaTypeValues.stream()
+                .anyMatch(value -> value.isAssignableFrom(object.getClass()));
+    }
 }

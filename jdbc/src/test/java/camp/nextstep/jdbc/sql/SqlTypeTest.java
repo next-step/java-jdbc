@@ -19,4 +19,16 @@ class SqlTypeTest {
         SqlType actual = SqlType.from(4);
         assertThat(actual).isEqualTo(SqlType.INTEGER);
     }
+
+    @Test
+    void SqlType에_불일치한_객체인_경우_false를_반환한다() {
+        boolean actual = SqlType.LONG.isSqlType("false");
+        assertThat(actual).isFalse();
+    }
+
+    @Test
+    void SqlType에_일치한_객체인_경우_true를_반환한다() {
+        boolean actual = SqlType.LONG.isSqlType(1L);
+        assertThat(actual).isTrue();
+    }
 }
