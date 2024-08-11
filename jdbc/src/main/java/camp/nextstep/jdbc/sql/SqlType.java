@@ -1,14 +1,16 @@
 package camp.nextstep.jdbc.sql;
 
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 public enum SqlType {
 
     INTEGER(Types.INTEGER, List.of(Integer.class, int.class)),
-    LONG(Types.BIGINT, List.of(Long.class, long.class)),
+    BIG_INT(Types.BIGINT, List.of(Long.class, long.class)),
     VAR_CHAR(Types.VARCHAR, List.of(String.class)),
+    TIME_STAMP(Types.TIMESTAMP, List.of(LocalDateTime.class))
     ;
 
     private final int sqlTypeValue;
