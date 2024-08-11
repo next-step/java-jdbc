@@ -72,3 +72,10 @@ update users set account = ?, password = ?, email = ? where id = ?
   - 에러 발생 시 발생한 에러에 대한 로그를 남긴다
   - 에러 발생 시 checkedException을 uncheckedException으로 변환하여 던진다
   - 요청된 쿼리 실행에 필요한 파라미터수와 불일치하는 경우 예외를 던진다
+
+## 3단계 - Transaction 적용하기
+- 트랜잭션 단위를 구성한다
+  - UserService에서 로직 실행 시 예외가 발생하면 롤백한다
+  - 트랜잭션 시작 시 auto commit를 false로 두어 commit 실행을 제한한다
+  - 비즈니스 실행이 모두 종료되었다면 commit한다
+  - 트랜잭션에 묶이는 dao들이 모두 같은 connection을 사용하도록 한다
