@@ -2,6 +2,7 @@ package camp.nextstep.jdbc.sql;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SqlTypeTest {
@@ -11,5 +12,11 @@ class SqlTypeTest {
         assertThatThrownBy(() -> SqlType.from(Integer.MAX_VALUE))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("지원하지 않는 sql 타입입니다.");
+    }
+
+    @Test
+    void sqlTypeValue를_받아_생성한다() {
+        SqlType actual = SqlType.from(4);
+        assertThat(actual).isEqualTo(SqlType.INTEGER);
     }
 }
