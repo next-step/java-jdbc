@@ -46,3 +46,13 @@
     - ResultSet 으로 반환 값을 셋팅한다
     - ResultSet, PreparedStatement, Connection 을 닫는다
     - try-catch-finally 로 예외처리를 한다.
+
+- JdbcTemplate
+    - update
+        - insert, update, delete 하는 책임을 가진다.
+    - query
+        - select 을 하는 책임을 가진다.
+    - queryForObject
+        - 단일 select 을 하는 책임을 가진다.
+- RowMapper
+    - ResultSet 에 나온 결과를 맵핑한 뒤 객체를 반환한다.

@@ -42,11 +42,7 @@ public class UserDao {
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
 
-        return jdbcTemplate.queryForObject(
-                sql,
-                preparedStatement -> preparedStatement.setLong(1, id),
-                USER_ROW_MAPPER
-        );
+        return jdbcTemplate.queryForObject(sql, USER_ROW_MAPPER, id);
     }
 
     public User findByAccount(final String account) {
@@ -54,8 +50,8 @@ public class UserDao {
 
         return jdbcTemplate.queryForObject(
                 sql,
-                preparedStatement -> preparedStatement.setString(1, account),
-                USER_ROW_MAPPER
+                USER_ROW_MAPPER,
+                account
         );
     }
 
