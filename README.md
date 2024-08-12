@@ -25,4 +25,13 @@
 - [x] SQL 쿼리 작성, 쿼리에 전달할 인자, Select 구문일 경우 조회 결과를 추출하는 것만 집중할 수 있어야 한다.
   - [x] 쿼리만 작성해서 jdbcTemplate에 넘기도록 구성한다
   - [x] 쿼리에 전달할 인자를 함께 넘기도록 구성한다 
-  - [x] select 구문일 경우 조회 결과를 추출할 수 있어야 한다  
+  - [x] select 구문일 경우 조회 결과를 추출할 수 있어야 한다
+
+### 🚀 2단계 - 리팩터링
+- 아래의 동작을 라이브러리로 만든다 
+  - [x] Connection 생성 
+  - [x] Statement 준비 및 실행 
+  - [x] ResultSet 생성 
+  - [x] 예외 처리 
+  - [x] 트랜잭션 관리 
+  - [x] Connection, Statement, ResultSet 객체 close 

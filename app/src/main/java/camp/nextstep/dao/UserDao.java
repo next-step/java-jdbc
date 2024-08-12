@@ -3,7 +3,6 @@ package camp.nextstep.dao;
 import camp.nextstep.domain.User;
 import camp.nextstep.dto.UserResultSetHandler;
 import camp.nextstep.jdbc.core.JdbcTemplate;
-import camp.nextstep.jdbc.core.Sql;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
 import java.util.List;
@@ -25,8 +24,8 @@ public class UserDao {
     }
 
     public void insert(final User user) {
-        Sql sql = new Sql("insert into users (account, password, email) values (?, ?, ?)", List.of(user.getAccount(), user.getPassword(), user.getEmail()));
-        jdbcTemplate.update(sql, pstmt -> {
+        String query = "insert into users (account, password, email) values (?, ?, ?)";
+        jdbcTemplate.update(query, pstmt -> {
             pstmt.setString(1, user.getAccount());
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getEmail());
@@ -34,8 +33,8 @@ public class UserDao {
     }
 
     public void update(final User user) {
-        Sql sql = new Sql("update users set account = ?, password = ?, email = ? where id = ?", List.of(user.getAccount(), user.getPassword(), user.getEmail(), user.getId()));
-        jdbcTemplate.update(sql, pstmt -> {
+        String query = "update users set account = ?, password = ?, email = ? where id = ?";
+        jdbcTemplate.update(query, pstmt -> {
             pstmt.setString(1, user.getAccount());
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getEmail());
@@ -44,19 +43,19 @@ public class UserDao {
     }
 
     public List<User> findAll() {
-        Sql sql = new Sql("select id, account, password, email from users");
-        return jdbcTemplate.selectAll(sql, userResultSetHandler);
+        String query = "select id, account, password, email from users";
+        return jdbcTemplate.selectAll(query, userResultSetHandler);
     }
 
     public User findById(final Long id) {
-        Sql sql = new Sql("select id, account, password, email from users where id = ?", id);
-        return jdbcTemplate.selectOne(sql, pstmt -> pstmt.setLong(1, id), userResultSetHandler)
+        String query = "select id, account, password, email from users where id = ?";
+        return jdbcTemplate.selectOne(query, pstmt -> pstmt.setLong(1, id), userResultSetHandler)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User findByAccount(final String account) {
-        Sql sql = new Sql("select id, account, password, email from users where account = ?", account);
-        return jdbcTemplate.selectOne(sql, pstmt -> pstmt.setString(1, account), userResultSetHandler)
+        String query = "select id, account, password, email from users where account = ?";
+        return jdbcTemplate.selectOne(query, pstmt -> pstmt.setString(1, account), userResultSetHandler)
                 .orElseThrow(() -> new UserNotFoundException(account));
     }
 }

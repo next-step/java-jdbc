@@ -16,9 +16,9 @@ public class JdbcTemplate {
         this.dataSource = dataSource;
     }
 
-    public void update(Sql sql, PreparedStatementSetter preparedStatementSetter) {
+    public void update(String query, PreparedStatementSetter preparedStatementSetter) {
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql.getQuery())) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
             preparedStatementSetter.setValues(pstmt);
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -26,9 +26,9 @@ public class JdbcTemplate {
         }
     }
 
-    public <T> Optional<T> selectOne(Sql sql, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
+    public <T> Optional<T> selectOne(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql.getQuery())) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
             preparedStatementSetter.setValues(pstmt);
             return getOneResult(resultSetHandler, pstmt);
         } catch (SQLException e) {
@@ -52,13 +52,13 @@ public class JdbcTemplate {
         }
     }
 
-    public <T> List<T> selectAll(Sql sql, ResultSetHandler<T> resultSetHandler) {
-        return selectAll(sql, pstmt -> {}, resultSetHandler);
+    public <T> List<T> selectAll(String query, ResultSetHandler<T> resultSetHandler) {
+        return selectAll(query, pstmt -> {}, resultSetHandler);
     }
 
-    public <T> List<T> selectAll(Sql sql, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
+    public <T> List<T> selectAll(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         try(Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql.getQuery())) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
             preparedStatementSetter.setValues(pstmt);
             return getMultipleResults(resultSetHandler, pstmt);
         } catch (SQLException e) {

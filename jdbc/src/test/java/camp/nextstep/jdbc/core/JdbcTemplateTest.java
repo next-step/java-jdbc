@@ -42,11 +42,9 @@ class JdbcTemplateTest {
     @Test
     void update() {
         String expected = "mail";
-        Sql insert = new Sql(INSERT_QUERY, expected);
-        jdbcTemplate.update(insert, pstmt -> pstmt.setString(1, expected));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, expected));
 
-        Sql findById = new Sql(SELECT_BY_ID_QUERY, 1L);
-        String actual = jdbcTemplate.selectOne(findById, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
+        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -54,13 +52,12 @@ class JdbcTemplateTest {
     @DisplayName("데이터가 수정된다.")
     @Test
     void update2() {
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
 
         String expected = "updateMail";
-        jdbcTemplate.update(new Sql(UPDATE_QUERY, expected), pstmt -> pstmt.setString(1, expected));
+        jdbcTemplate.update(UPDATE_QUERY, pstmt -> pstmt.setString(1, expected));
 
-        Sql findById = new Sql(SELECT_BY_ID_QUERY, 1L);
-        String actual = jdbcTemplate.selectOne(findById, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
+        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -68,10 +65,9 @@ class JdbcTemplateTest {
     @DisplayName("데이터를 1개 가져온다.")
     @Test
     void selectOne() {
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
 
-        Sql findById = new Sql(SELECT_BY_ID_QUERY, 1L);
-        String actual = jdbcTemplate.selectOne(findById, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
+        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
 
         assertThat(actual).isEqualTo("mail");
     }
@@ -79,10 +75,9 @@ class JdbcTemplateTest {
     @DisplayName("데이터가 없으면 Optional.empty() 반환한다.")
     @Test
     void selectOne2() {
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
 
-        Sql findById = new Sql(SELECT_BY_ID_QUERY, 12342L);
-        Optional<String> actual = jdbcTemplate.selectOne(findById, pstmt -> pstmt.setLong(1, 12342L), EMAIL_RESULT_SET_HANDLER);
+        Optional<String> actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 12342L), EMAIL_RESULT_SET_HANDLER);
 
         assertThat(actual).isEmpty();
     }
@@ -90,23 +85,21 @@ class JdbcTemplateTest {
     @DisplayName("데이터가 2개 이상이면 예외를 발생시킨다.")
     @Test
     void selectOne3() {
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
 
-        Sql findByEmail = new Sql(SELECT_BY_EMAIL_QUERY, "mail");
-        assertThatThrownBy(() -> jdbcTemplate.selectOne(findByEmail, pstmt -> pstmt.setString(1, "mail"), EMAIL_RESULT_SET_HANDLER))
+        assertThatThrownBy(() -> jdbcTemplate.selectOne(SELECT_BY_EMAIL_QUERY, pstmt -> pstmt.setString(1, "mail"), EMAIL_RESULT_SET_HANDLER))
                 .isInstanceOf(NotSingleResultSetException.class);
     }
 
     @DisplayName("해당하는 모든 결과를 찾는다.")
     @Test
     void selectAll() {
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
-        jdbcTemplate.update(new Sql(INSERT_QUERY, "mail"), pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
 
-        Sql findByEmail = new Sql(SELECT_BY_EMAIL_QUERY, "mail");
-        List<String> actual = jdbcTemplate.selectAll(findByEmail, pstmt -> pstmt.setString(1, "mail"), EMAIL_RESULT_SET_HANDLER);
+        List<String> actual = jdbcTemplate.selectAll(SELECT_BY_EMAIL_QUERY, pstmt -> pstmt.setString(1, "mail"), EMAIL_RESULT_SET_HANDLER);
 
         assertThat(actual).hasSize(3);
     }
