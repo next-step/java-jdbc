@@ -16,6 +16,10 @@ public class JdbcTemplate {
         this.dataSource = dataSource;
     }
 
+    public void update(String query, Object... args) {
+        update(query, new ArgumentPreparedStatementSetter(args));
+    }
+
     public void update(String query, PreparedStatementSetter preparedStatementSetter) {
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -24,6 +28,10 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }
+    }
+
+    public <T> Optional<T> selectOne(String query, ResultSetHandler<T> resultSetHandler, Object... args) {
+        return selectOne(query, new ArgumentPreparedStatementSetter(args), resultSetHandler);
     }
 
     public <T> Optional<T> selectOne(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
@@ -54,6 +62,10 @@ public class JdbcTemplate {
 
     public <T> List<T> selectAll(String query, ResultSetHandler<T> resultSetHandler) {
         return selectAll(query, pstmt -> {}, resultSetHandler);
+    }
+
+    public <T> List<T> selectAll(String query, ResultSetHandler<T> resultSetHandler, Object... args) {
+        return selectAll(query, new ArgumentPreparedStatementSetter(args), resultSetHandler);
     }
 
     public <T> List<T> selectAll(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {

@@ -42,9 +42,10 @@ class JdbcTemplateTest {
     @Test
     void update() {
         String expected = "mail";
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, expected));
+        jdbcTemplate.update(INSERT_QUERY, expected);
 
-        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
+        long id = 1L;
+        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, EMAIL_RESULT_SET_HANDLER, id).get();
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -52,12 +53,13 @@ class JdbcTemplateTest {
     @DisplayName("데이터가 수정된다.")
     @Test
     void update2() {
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, "mail");
 
         String expected = "updateMail";
-        jdbcTemplate.update(UPDATE_QUERY, pstmt -> pstmt.setString(1, expected));
+        jdbcTemplate.update(UPDATE_QUERY, expected);
 
-        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
+        long id = 1L;
+        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, EMAIL_RESULT_SET_HANDLER, id).get();
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -65,9 +67,10 @@ class JdbcTemplateTest {
     @DisplayName("데이터를 1개 가져온다.")
     @Test
     void selectOne() {
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, "mail");
 
-        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 1L), EMAIL_RESULT_SET_HANDLER).get();
+        long id = 1L;
+        String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, EMAIL_RESULT_SET_HANDLER, id).get();
 
         assertThat(actual).isEqualTo("mail");
     }
@@ -75,9 +78,9 @@ class JdbcTemplateTest {
     @DisplayName("데이터가 없으면 Optional.empty() 반환한다.")
     @Test
     void selectOne2() {
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, "mail");
 
-        Optional<String> actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, pstmt -> pstmt.setLong(1, 12342L), EMAIL_RESULT_SET_HANDLER);
+        Optional<String> actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, EMAIL_RESULT_SET_HANDLER, 12342L);
 
         assertThat(actual).isEmpty();
     }
@@ -85,21 +88,21 @@ class JdbcTemplateTest {
     @DisplayName("데이터가 2개 이상이면 예외를 발생시킨다.")
     @Test
     void selectOne3() {
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, "mail");
+        jdbcTemplate.update(INSERT_QUERY, "mail");
 
-        assertThatThrownBy(() -> jdbcTemplate.selectOne(SELECT_BY_EMAIL_QUERY, pstmt -> pstmt.setString(1, "mail"), EMAIL_RESULT_SET_HANDLER))
+        assertThatThrownBy(() -> jdbcTemplate.selectOne(SELECT_BY_EMAIL_QUERY, EMAIL_RESULT_SET_HANDLER, "mail"))
                 .isInstanceOf(NotSingleResultSetException.class);
     }
 
     @DisplayName("해당하는 모든 결과를 찾는다.")
     @Test
     void selectAll() {
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
-        jdbcTemplate.update(INSERT_QUERY, pstmt -> pstmt.setString(1, "mail"));
+        jdbcTemplate.update(INSERT_QUERY, "mail");
+        jdbcTemplate.update(INSERT_QUERY, "mail");
+        jdbcTemplate.update(INSERT_QUERY, "mail");
 
-        List<String> actual = jdbcTemplate.selectAll(SELECT_BY_EMAIL_QUERY, pstmt -> pstmt.setString(1, "mail"), EMAIL_RESULT_SET_HANDLER);
+        List<String> actual = jdbcTemplate.selectAll(SELECT_BY_EMAIL_QUERY, EMAIL_RESULT_SET_HANDLER, "mail");
 
         assertThat(actual).hasSize(3);
     }

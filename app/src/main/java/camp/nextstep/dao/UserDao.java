@@ -25,21 +25,12 @@ public class UserDao {
 
     public void insert(final User user) {
         String query = "insert into users (account, password, email) values (?, ?, ?)";
-        jdbcTemplate.update(query, pstmt -> {
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-        });
+        jdbcTemplate.update(query, user.getAccount(), user.getPassword(), user.getEmail());
     }
 
     public void update(final User user) {
         String query = "update users set account = ?, password = ?, email = ? where id = ?";
-        jdbcTemplate.update(query, pstmt -> {
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setLong(4, user.getId());
-        });
+        jdbcTemplate.update(query, user.getAccount(), user.getPassword(), user.getEmail(), user.getId());
     }
 
     public List<User> findAll() {
@@ -49,13 +40,13 @@ public class UserDao {
 
     public User findById(final Long id) {
         String query = "select id, account, password, email from users where id = ?";
-        return jdbcTemplate.selectOne(query, pstmt -> pstmt.setLong(1, id), userResultSetHandler)
+        return jdbcTemplate.selectOne(query, userResultSetHandler, id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User findByAccount(final String account) {
         String query = "select id, account, password, email from users where account = ?";
-        return jdbcTemplate.selectOne(query, pstmt -> pstmt.setString(1, account), userResultSetHandler)
+        return jdbcTemplate.selectOne(query, userResultSetHandler, account)
                 .orElseThrow(() -> new UserNotFoundException(account));
     }
 }
