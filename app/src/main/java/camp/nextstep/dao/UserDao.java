@@ -60,123 +60,85 @@ public class UserDao {
 
     public List<User> findAll() {
         final var sql = "select id, account, password, email from users";
-        try (final Connection conn = dataSource.getConnection();
-             final PreparedStatement pstmt = conn.prepareStatement(sql);
-             final ResultSet rs = pstmt.executeQuery()) {
-
-            log.info("query : {}", sql);
-
-            final List<User> users = new ArrayList<>();
-            while (rs.next()) {
-                users.add(
-                        new User(rs.getLong(1),
-                                rs.getString(2),
-                                rs.getString(3),
-                                rs.getString(4))
-                );
-            }
-            return users;
-        } catch (final SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
+        return query(sql,
+                rs -> new User(
+                        rs.getLong(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4)));
     }
 
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, id);
-            rs = pstmt.executeQuery();
-
-            log.info("query : {}", sql);
-
-            if (rs.next()) {
-                return new User(
+        return queryForObject(
+                sql,
+                preparedStatement -> preparedStatement.setLong(1, id),
+                rs -> new User(
                         rs.getLong(1),
                         rs.getString(2),
                         rs.getString(3),
-                        rs.getString(4));
-            }
-            return null;
-        } catch (final SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (final SQLException ignored) {
-            }
-
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (final SQLException ignored) {
-            }
-
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (final SQLException ignored) {
-            }
-        }
+                        rs.getString(4))
+        );
     }
 
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, account);
-            rs = pstmt.executeQuery();
-
-            log.info("query : {}", sql);
-
-            if (rs.next()) {
-                return new User(
+        return queryForObject(
+                sql,
+                preparedStatement -> preparedStatement.setString(1, account),
+                rs -> new User(
                         rs.getLong(1),
                         rs.getString(2),
                         rs.getString(3),
-                        rs.getString(4));
+                        rs.getString(4))
+        );
+    }
+
+    private <T> List<T> query(final String sql, final PreparedStatementSetter preparedStatementSetter, final RowMapper<T> rowMapper) {
+        try (final Connection conn = dataSource.getConnection();
+             final PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (preparedStatementSetter != null) {
+                preparedStatementSetter.setValues(pstmt);
             }
-            return null;
+
+            final ResultSet rs = pstmt.executeQuery();
+
+            log.info("query : {}", sql);
+
+            final List<T> result = new ArrayList<>();
+            while (rs.next()) {
+                result.add(rowMapper.mapRow(rs));
+            }
+            return result;
         } catch (final SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (final SQLException ignored) {
-            }
-
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (final SQLException ignored) {
-            }
-
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (final SQLException ignored) {
-            }
         }
+    }
+
+    private <T> List<T> query(final String sql, final RowMapper<T> rowMapper) {
+        return query(sql, null, rowMapper);
+    }
+
+    private <T> T queryForObject(final String sql, final PreparedStatementSetter preparedStatementSetter, final RowMapper<T> rowMapper) {
+        final List<T> result = query(sql, preparedStatementSetter, rowMapper);
+        if (result.isEmpty()) {
+            return null;
+        }
+        return result.get(0);
+    }
+
+
+    @FunctionalInterface
+    private interface RowMapper<T> {
+        T mapRow(ResultSet rs) throws SQLException;
+    }
+
+    @FunctionalInterface
+    private interface PreparedStatementSetter {
+        void setValues(PreparedStatement preparedStatement) throws SQLException;
     }
 }
