@@ -56,3 +56,13 @@
         - 단일 select 을 하는 책임을 가진다.
 - RowMapper
     - ResultSet 에 나온 결과를 맵핑한 뒤 객체를 반환한다.
+
+## 2단계 - 리팩터링
+
+### 요구사항 정리
+
+- IndexedQueryBuilder
+  - "?" 기반 sql 를 만들어주는 query builder
+- PrepareStatementSetter
+  - IndexedPrepareStatementSetter
+    - prepareStatement 를 이용해 "?" 로 되어있는 sql 을 index 기반으로 치환한다.
