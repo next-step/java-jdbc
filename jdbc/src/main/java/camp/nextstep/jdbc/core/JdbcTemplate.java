@@ -16,20 +16,20 @@ public class JdbcTemplate {
         this.dataSource = dataSource;
     }
 
-    public void update(Sql sql) {
+    public void update(Sql sql, PreparedStatementSetter preparedStatementSetter) {
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql.getQuery())) {
-            setUpParameters(pstmt, sql.getParams());
+            preparedStatementSetter.setValues(pstmt);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }
     }
 
-    public <T> Optional<T> selectOne(Sql sql, ResultSetHandler<T> resultSetHandler) {
+    public <T> Optional<T> selectOne(Sql sql, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql.getQuery())) {
-            setUpParameters(pstmt, sql.getParams());
+            preparedStatementSetter.setValues(pstmt);
             return getOneResult(resultSetHandler, pstmt);
         } catch (SQLException e) {
             throw new DatabaseException(e);
@@ -53,9 +53,13 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> selectAll(Sql sql, ResultSetHandler<T> resultSetHandler) {
+        return selectAll(sql, pstmt -> {}, resultSetHandler);
+    }
+
+    public <T> List<T> selectAll(Sql sql, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         try(Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql.getQuery())) {
-            setUpParameters(pstmt, sql.getParams());
+            preparedStatementSetter.setValues(pstmt);
             return getMultipleResults(resultSetHandler, pstmt);
         } catch (SQLException e) {
             throw new DatabaseException(e);
@@ -69,12 +73,6 @@ public class JdbcTemplate {
                 results.add(resultSetHandler.handle(rs));
             }
             return results;
-        }
-    }
-
-    private void setUpParameters(PreparedStatement pstmt, List<?> params) throws SQLException {
-        for (int i = 0; i < params.size(); i++) {
-            pstmt.setObject(i + 1, params.get(i));
         }
     }
 }

@@ -26,12 +26,21 @@ public class UserDao {
 
     public void insert(final User user) {
         Sql sql = new Sql("insert into users (account, password, email) values (?, ?, ?)", List.of(user.getAccount(), user.getPassword(), user.getEmail()));
-        jdbcTemplate.update(sql);
+        jdbcTemplate.update(sql, pstmt -> {
+            pstmt.setString(1, user.getAccount());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getEmail());
+        });
     }
 
     public void update(final User user) {
         Sql sql = new Sql("update users set account = ?, password = ?, email = ? where id = ?", List.of(user.getAccount(), user.getPassword(), user.getEmail(), user.getId()));
-        jdbcTemplate.update(sql);
+        jdbcTemplate.update(sql, pstmt -> {
+            pstmt.setString(1, user.getAccount());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setLong(4, user.getId());
+        });
     }
 
     public List<User> findAll() {
@@ -41,13 +50,13 @@ public class UserDao {
 
     public User findById(final Long id) {
         Sql sql = new Sql("select id, account, password, email from users where id = ?", id);
-        return jdbcTemplate.selectOne(sql, userResultSetHandler)
+        return jdbcTemplate.selectOne(sql, pstmt -> pstmt.setLong(1, id), userResultSetHandler)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User findByAccount(final String account) {
         Sql sql = new Sql("select id, account, password, email from users where account = ?", account);
-        return jdbcTemplate.selectOne(sql, userResultSetHandler)
+        return jdbcTemplate.selectOne(sql, pstmt -> pstmt.setString(1, account), userResultSetHandler)
                 .orElseThrow(() -> new UserNotFoundException(account));
     }
 }
