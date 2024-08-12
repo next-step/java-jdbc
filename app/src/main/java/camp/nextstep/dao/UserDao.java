@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -40,9 +41,9 @@ public class UserDao {
         executeUpdate(sql, user.getPassword(), user.getId());
     }
 
-    private void executeUpdate(final String sql, Object... params) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+    private void executeUpdate(final String sql, final Object... params) {
+        try (final Connection conn = dataSource.getConnection();
+             final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
             log.info("query : {}", sql);
 
@@ -51,15 +52,34 @@ public class UserDao {
             }
 
             preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
 
     public List<User> findAll() {
-        // todo
-        return null;
+        final var sql = "select id, account, password, email from users";
+        try (final Connection conn = dataSource.getConnection();
+             final PreparedStatement pstmt = conn.prepareStatement(sql);
+             final ResultSet rs = pstmt.executeQuery()) {
+
+            log.info("query : {}", sql);
+
+            final List<User> users = new ArrayList<>();
+            while (rs.next()) {
+                users.add(
+                        new User(rs.getLong(1),
+                                rs.getString(2),
+                                rs.getString(3),
+                                rs.getString(4))
+                );
+            }
+            return users;
+        } catch (final SQLException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     public User findById(final Long id) {
@@ -84,7 +104,7 @@ public class UserDao {
                         rs.getString(4));
             }
             return null;
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         } finally {
@@ -92,21 +112,21 @@ public class UserDao {
                 if (rs != null) {
                     rs.close();
                 }
-            } catch (SQLException ignored) {
+            } catch (final SQLException ignored) {
             }
 
             try {
                 if (pstmt != null) {
                     pstmt.close();
                 }
-            } catch (SQLException ignored) {
+            } catch (final SQLException ignored) {
             }
 
             try {
                 if (conn != null) {
                     conn.close();
                 }
-            } catch (SQLException ignored) {
+            } catch (final SQLException ignored) {
             }
         }
     }
