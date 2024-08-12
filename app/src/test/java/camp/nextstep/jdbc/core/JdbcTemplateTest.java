@@ -7,10 +7,7 @@ import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -21,8 +18,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static support.CleanUp.cleanUp;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcTemplateTest {
 
     private static final DataSource dataSource = new MyConfiguration().dataSource();
@@ -35,12 +32,11 @@ class JdbcTemplateTest {
 
     @AfterEach
     void tearDown() {
-        cleanUp();
+        cleanUp(dataSource);
     }
 
     @DisplayName("insert query 를 받아 실행 하면 데이터가 저장 된다")
     @Test
-    @Order(1)
     public void update_insert() throws Exception {
         // given
         final User user = new User(1L, "account", "password", "email");
@@ -50,15 +46,14 @@ class JdbcTemplateTest {
         jdbcTemplate.update(sql, user.getAccount(), user.getPassword(), user.getEmail());
 
         // then
-        final User actual = findUserById(user.getId());
+        final User actual = findUserByAccount(user.getAccount());
         assertThat(actual).isNotNull()
-                .extracting("id", "account", "password", "email")
-                .contains(1L, "account", "password", "email");
+                .extracting("account", "password", "email")
+                .contains("account", "password", "email");
     }
 
     @DisplayName("update query 를 받아 실행 하면 데이터가 수정 된다")
     @Test
-    @Order(2)
     public void update_update() throws Exception {
         // given
         final User user = new User(1L, "account", "password", "email");
@@ -89,7 +84,6 @@ class JdbcTemplateTest {
 
     @DisplayName("delete query 를 받아 실행 하면 데이터가 삭제 된다")
     @Test
-    @Order(3)
     public void update_delete() throws Exception {
         // given
         final User user = new User(1L, "account", "password", "email");
@@ -233,7 +227,32 @@ class JdbcTemplateTest {
                 );
     }
 
-    public User findUserById(final Long id) {
+    private User findUserByAccount(final String account) {
+        final String sql = "SELECT id, account, password, email FROM users WHERE account = ?";
+
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            pstmt.setString(1, account);
+
+            try (final ResultSet resultSet = pstmt.executeQuery()) {
+                if (resultSet.next()) {
+                    return new User(
+                            resultSet.getLong("id"),
+                            resultSet.getString("account"),
+                            resultSet.getString("password"),
+                            resultSet.getString("email")
+                    );
+                }
+            }
+        } catch (final SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private User findUserById(final Long id) {
         final String sql = "SELECT id, account, password, email FROM users WHERE id = ?";
 
         try (final Connection connection = dataSource.getConnection();
@@ -256,19 +275,6 @@ class JdbcTemplateTest {
         }
 
         return null;
-    }
-
-    // 테이블 내 모든 데이터를 삭제하는 메서드
-    public void cleanUp() {
-        final String sql = "DELETE FROM users";
-
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement pstmt = connection.prepareStatement(sql)) {
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
 }

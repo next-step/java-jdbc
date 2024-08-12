@@ -2,6 +2,7 @@ package camp.nextstep.dao;
 
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.jdbc.core.KeyHolder;
 import camp.nextstep.jdbc.core.RowMapper;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
@@ -29,7 +30,17 @@ public class UserDao {
 
     public void insert(final User user) {
         final var sql = "insert into users (account, password, email) values (?, ?, ?)";
-        jdbcTemplate.update(sql, user.getAccount(), user.getPassword(), user.getEmail());
+        final KeyHolder keyHolder = new KeyHolder();
+        jdbcTemplate.update((connection) -> {
+            final PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, user.getAccount());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getEmail());
+
+            return pstmt;
+        }, keyHolder);
+
+        user.setId(keyHolder.getKey().longValue());
     }
 
     public void update(final User user) {
@@ -38,8 +49,9 @@ public class UserDao {
     }
 
     public List<User> findAll() {
-        // todo
-        return null;
+        final var sql = "select * from users";
+
+        return jdbcTemplate.query(sql, new Object[]{}, new UserRowMapper());
     }
 
     public User findById(final Long id) {
@@ -49,7 +61,8 @@ public class UserDao {
     }
 
     public User findByAccount(final String account) {
-        // todo
-        return null;
+        final var sql = "select id, account, password, email from users where account = ?";
+
+        return jdbcTemplate.queryForObject(sql, new Object[]{account}, new UserRowMapper());
     }
 }
