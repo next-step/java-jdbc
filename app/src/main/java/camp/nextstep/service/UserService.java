@@ -7,6 +7,8 @@ import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -14,6 +16,8 @@ import java.sql.SQLException;
 
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserDao userDao;
     private final UserHistoryDao userHistoryDao;
@@ -52,6 +56,7 @@ public class UserService {
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+            log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
             throw new DataAccessException(e);
         } catch (Exception e) {
             connection.rollback();

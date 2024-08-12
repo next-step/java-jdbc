@@ -29,7 +29,7 @@ public class DefaultPreparedStatementSetter implements PreparedStatementSetter {
 
             return preparedStatementParser.parse(preparedStatement);
         } catch (SQLException e) {
-            log.warn("쿼리 실행에 오류가 발생했습니다. sql : {}", sql);
+            log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
             throw new DataAccessException("쿼리 실행 시 오류 발생", e);
         }
     }
@@ -41,7 +41,7 @@ public class DefaultPreparedStatementSetter implements PreparedStatementSetter {
 
             return preparedStatementParser.parse(preparedStatement);
         } catch (SQLException e) {
-            log.warn("쿼리 실행에 오류가 발생했습니다. sql : {}", sql);
+            log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
             throw new DataAccessException("쿼리 실행 시 오류 발생", e);
         }
     }
