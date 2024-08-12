@@ -62,7 +62,18 @@
 ### 요구사항 정리
 
 - IndexedQueryBuilder
-  - "?" 기반 sql 를 만들어주는 query builder
+    - "?" 기반 sql 를 만들어주는 query builder
 - PrepareStatementSetter
-  - IndexedPrepareStatementSetter
-    - prepareStatement 를 이용해 "?" 로 되어있는 sql 을 index 기반으로 치환한다.
+    - IndexedPrepareStatementSetter
+        - prepareStatement 를 이용해 "?" 로 되어있는 sql 을 index 기반으로 치환한다.
+
+## 3단계 - Transaction 적용하기
+
+### 요구사항
+
+- `UserService.changePassword` 가 원자성(Atomic) 을 보장하도록 트랜잭션을 적용한다.
+- `Connection.setAutoCommit(false)` 를 통해 트랜잭션을 시작한다.
+- 비지니스 로직을 실행한다.
+- 정상적으로 종료되면 `Connection.commit()` 으로 커밋한다.
+- 예외가 발생하면 `Connection.rollback()` 으로 롤백 한 뒤 예외를 던진다.
+- userDao 와 userHistoryDao 가 하나의 Connection 객체를 사용하도록 한다.
