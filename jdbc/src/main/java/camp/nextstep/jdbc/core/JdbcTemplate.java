@@ -23,14 +23,16 @@ public class JdbcTemplate {
     }
 
     public void update(final String sql, final Object... params) {
+        update(sql, new IndexedPreparedStatementSetter(params));
+    }
+
+    public void update(final String sql, final PreparedStatementSetter preparedStatementSetter) {
         try (final Connection conn = dataSource.getConnection();
              final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
             log.info("query : {}", sql);
 
-            for (int i = 0; i < params.length; i++) {
-                preparedStatement.setObject(i + 1, params[i]);
-            }
+            preparedStatementSetter.setValues(preparedStatement);
 
             preparedStatement.executeUpdate();
         } catch (final SQLException e) {
@@ -40,13 +42,15 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(final String sql, final RowMapper<T> rowMapper, final Object... params) {
+        return query(sql, rowMapper, new IndexedPreparedStatementSetter(params));
+    }
+
+    public <T> List<T> query(final String sql, final RowMapper<T> rowMapper, final PreparedStatementSetter preparedStatementSetter) {
         ResultSet resultSet = null;
         try (final Connection conn = dataSource.getConnection();
              final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.length; i++) {
-                preparedStatement.setObject(i + 1, params[i]);
-            }
+            preparedStatementSetter.setValues(preparedStatement);
 
             resultSet = preparedStatement.executeQuery();
 
