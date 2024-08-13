@@ -10,14 +10,23 @@ public abstract class TransactionSynchronizationManager {
 
     private TransactionSynchronizationManager() {}
 
+    public static boolean isTransactionActive(DataSource key) {
+        Map<DataSource, Connection> dataSourceConnectionMap = resources.get();
+        return dataSourceConnectionMap != null && dataSourceConnectionMap.get(key) != null;
+    }
+
     public static Connection getResource(DataSource key) {
-        return null;
+        Map<DataSource, Connection> dataSourceConnectionMap = resources.get();
+        return dataSourceConnectionMap == null ? null : dataSourceConnectionMap.get(key);
     }
 
     public static void bindResource(DataSource key, Connection value) {
+        resources.set(Map.of(key, value));
     }
 
     public static Connection unbindResource(DataSource key) {
-        return null;
+        Map<DataSource, Connection> dataSourceConnectionMap = resources.get();
+        resources.remove();
+        return dataSourceConnectionMap == null ? null : dataSourceConnectionMap.get(key);
     }
 }

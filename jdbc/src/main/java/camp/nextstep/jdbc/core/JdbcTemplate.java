@@ -1,5 +1,7 @@
 package camp.nextstep.jdbc.core;
 
+import camp.nextstep.dao.DataAccessException;
+import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,27 +24,34 @@ public class JdbcTemplate {
     }
 
     public void update(String query, PreparedStatementSetter preparedStatementSetter) {
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(query)) {
-            preparedStatementSetter.setValues(pstmt);
-            pstmt.executeUpdate();
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                preparedStatementSetter.setValues(pstmt);
+                pstmt.executeUpdate();
+            }
         } catch (SQLException e) {
-            throw new DatabaseException(e);
+            throw new DataAccessException(e);
+        } finally {
+            closeConnection(connection);
         }
     }
 
-    private void validateCountOfParameter(String query, Object... args) {
-        long queryParameterCounts = countParameters(query);
-        int argumentCounts = args.length;
-        if (queryParameterCounts != argumentCounts) {
-            throw new IllegalArgumentException("query에 명시된 매개변수 개수와 전달받은 인자 개수가 불일치합니다. queryParameterCounts=%s, argumentCounts=%s".formatted(queryParameterCounts, argumentCounts));
+    private void releaseConnection(Connection connection) {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new DataAccessException("JDBC Connection Release 실패");
         }
     }
 
-    private long countParameters(String query) {
-        return query.chars()
-                .filter(c -> c == '?')
-                .count();
+    private Connection getConnection() throws SQLException {
+        if (TransactionSynchronizationManager.isTransactionActive(dataSource)) {
+            return TransactionSynchronizationManager.getResource(dataSource);
+        }
+
+        return dataSource.getConnection();
     }
 
     public <T> Optional<T> selectOne(String query, ResultSetHandler<T> resultSetHandler, Object... args) {
@@ -51,12 +60,23 @@ public class JdbcTemplate {
     }
 
     public <T> Optional<T> selectOne(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(query)) {
-            preparedStatementSetter.setValues(pstmt);
-            return findOneResult(resultSetHandler, pstmt);
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                preparedStatementSetter.setValues(pstmt);
+                return findOneResult(resultSetHandler, pstmt);
+            }
         } catch (SQLException e) {
-            throw new DatabaseException(e);
+            throw new DataAccessException(e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    private void closeConnection(Connection connection) {
+        if (connection != null && !TransactionSynchronizationManager.isTransactionActive(dataSource)) {
+            releaseConnection(connection);
         }
     }
 
@@ -86,12 +106,17 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> selectAll(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
-        try(Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(query)) {
-            preparedStatementSetter.setValues(pstmt);
-            return getMultipleResults(resultSetHandler, pstmt);
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                preparedStatementSetter.setValues(pstmt);
+                return getMultipleResults(resultSetHandler, pstmt);
+            }
         } catch (SQLException e) {
-            throw new DatabaseException(e);
+            throw new DataAccessException(e);
+        } finally {
+            closeConnection(connection);
         }
     }
 
@@ -103,5 +128,19 @@ public class JdbcTemplate {
             }
             return results;
         }
+    }
+
+    private void validateCountOfParameter(String query, Object... args) {
+        long queryParameterCounts = countParameters(query);
+        int argumentCounts = args.length;
+        if (queryParameterCounts != argumentCounts) {
+            throw new IllegalArgumentException("query에 명시된 매개변수 개수와 전달받은 인자 개수가 불일치합니다. queryParameterCounts=%s, argumentCounts=%s".formatted(queryParameterCounts, argumentCounts));
+        }
+    }
+
+    private long countParameters(String query) {
+        return query.chars()
+                .filter(c -> c == '?')
+                .count();
     }
 }
