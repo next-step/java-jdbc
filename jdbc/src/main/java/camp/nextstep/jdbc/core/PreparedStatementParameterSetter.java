@@ -57,10 +57,7 @@ public enum PreparedStatementParameterSetter {
     }
 
     public static void setParameter(PreparedStatement preparedStatement, int index, Object value) {
-        PreparedStatementParameterSetter parameterSetter = TYPE_MAP.get(value.getClass());
-        if (parameterSetter == null) {
-            throw new IllegalArgumentException("존재하지 않는 타입의 필드입니다.");
-        }
+        PreparedStatementParameterSetter parameterSetter = TYPE_MAP.getOrDefault(value.getClass(), OBJECT);
         parameterSetter.accept(preparedStatement, index, value);
     }
 
