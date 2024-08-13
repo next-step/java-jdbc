@@ -48,4 +48,13 @@ class TransactionSynchronizationManagerTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 바인딩된 DataSource입니다.");
     }
+
+    @Test
+    void 바인딩되지_않는_DataSource로_요청하는_경우_예외를_던진다() {
+        DataSource dataSource = mock(DataSource.class);
+
+        assertThatThrownBy(() -> TransactionSynchronizationManager.unbindResource(dataSource))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("key에 해당하는 바인딩된 DataSource가 없습니다.");
+    }
 }

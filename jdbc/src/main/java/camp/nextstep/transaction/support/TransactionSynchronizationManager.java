@@ -32,6 +32,10 @@ public final class TransactionSynchronizationManager {
     }
 
     public static Connection unbindResource(DataSource key) {
+        Map<DataSource, Connection> currentResources = resources.get();
+        if (!currentResources.containsKey(key)) {
+            throw new IllegalArgumentException("key에 해당하는 바인딩된 DataSource가 없습니다.");
+        }
         return null;
     }
 }
