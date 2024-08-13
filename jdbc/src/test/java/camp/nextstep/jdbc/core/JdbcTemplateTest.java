@@ -8,10 +8,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +22,7 @@ class JdbcTemplateTest {
     private final DataSource dataSource = mock(DataSource.class);
     private final Connection connection = mock(Connection.class);
     private final PreparedStatement preparedStatement = mock(PreparedStatement.class);
+    private final ParameterMetaData parameterMetaData = mock(ParameterMetaData.class);
     private final ResultSet resultSet = mock(ResultSet.class);
 
     private final RowMapper<Member> rowMapper = rs -> new Member(rs.getLong("id"), rs.getString("name"));
@@ -57,6 +55,8 @@ class JdbcTemplateTest {
         void List에_데이터를_담아_반환한다() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
             when(connection.prepareStatement("select id, name from member")).thenReturn(preparedStatement);
+            when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
+            when(parameterMetaData.getParameterCount()).thenReturn(0);
             when(preparedStatement.executeQuery()).thenReturn(resultSet);
 
             when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -71,6 +71,9 @@ class JdbcTemplateTest {
         void 파라미터를_받아_List에_데이터를_담아_반환한다() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
             when(connection.prepareStatement("select id, name from member where name = ?")).thenReturn(preparedStatement);
+            when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
+            when(parameterMetaData.getParameterCount()).thenReturn(1);
+            when(parameterMetaData.getParameterType(1)).thenReturn(12);
             when(preparedStatement.executeQuery()).thenReturn(resultSet);
 
             when(resultSet.next()).thenReturn(true).thenReturn(false);
@@ -108,13 +111,16 @@ class JdbcTemplateTest {
         void 쿼리를_실행한_ResultSet값을_매핑하여_반환한다() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
             when(connection.prepareStatement("select id, name from member where id = ?")).thenReturn(preparedStatement);
+            when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
+            when(parameterMetaData.getParameterCount()).thenReturn(1);
+            when(parameterMetaData.getParameterType(1)).thenReturn(-5);
             when(preparedStatement.executeQuery()).thenReturn(resultSet);
 
             when(resultSet.next()).thenReturn(true);
             when(resultSet.getLong("id")).thenReturn(1L);
             when(resultSet.getString("name")).thenReturn("jin young");
 
-            Optional<Member> actual = jdbcTemplate.queryForObject("select id, name from member where id = ?", rowMapper, 1);
+            Optional<Member> actual = jdbcTemplate.queryForObject("select id, name from member where id = ?", rowMapper, 1L);
             assertThat(actual).isEqualTo(Optional.of(new Member(1L, "jin young")));
         }
 
@@ -122,13 +128,16 @@ class JdbcTemplateTest {
         void 쿼리값이_존재하지_않는_경우_empty가_반환된다() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
             when(connection.prepareStatement("select id, name from member where id = ?")).thenReturn(preparedStatement);
+            when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
+            when(parameterMetaData.getParameterCount()).thenReturn(1);
+            when(parameterMetaData.getParameterType(1)).thenReturn(-5);
             when(preparedStatement.executeQuery()).thenReturn(resultSet);
             when(resultSet.next()).thenReturn(false);
 
             Optional<Member> actual = jdbcTemplate.queryForObject(
                     "select id, name from member where id = ?",
                     rs -> new Member(rs.getLong("id"), rs.getString("name")),
-                    1
+                    1L
             );
             assertThat(actual).isEmpty();
         }
@@ -160,6 +169,10 @@ class JdbcTemplateTest {
         void 쿼리를_받아_preparedStatement를_실행한다() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
             when(connection.prepareStatement("update member set name = ? where id = ?")).thenReturn(preparedStatement);
+            when(preparedStatement.getParameterMetaData()).thenReturn(parameterMetaData);
+            when(parameterMetaData.getParameterCount()).thenReturn(2);
+            when(parameterMetaData.getParameterType(1)).thenReturn(12);
+            when(parameterMetaData.getParameterType(2)).thenReturn(-5);
             when(preparedStatement.executeUpdate()).thenReturn(1);
 
             int actual = jdbcTemplate.update("update member set name = ? where id = ?", "young jin", 1L);
