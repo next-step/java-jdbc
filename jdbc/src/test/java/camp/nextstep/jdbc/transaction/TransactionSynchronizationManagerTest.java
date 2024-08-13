@@ -1,4 +1,4 @@
-package camp.nextstep.transaction.support;
+package camp.nextstep.jdbc.transaction;
 
 import org.junit.jupiter.api.Test;
 

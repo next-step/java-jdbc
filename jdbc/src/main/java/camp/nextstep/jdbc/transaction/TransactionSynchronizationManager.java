@@ -1,4 +1,4 @@
-package camp.nextstep.transaction.support;
+package camp.nextstep.jdbc.transaction;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

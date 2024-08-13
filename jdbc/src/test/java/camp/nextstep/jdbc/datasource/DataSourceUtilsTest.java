@@ -1,6 +1,6 @@
 package camp.nextstep.jdbc.datasource;
 
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import camp.nextstep.jdbc.transaction.TransactionSynchronizationManager;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;

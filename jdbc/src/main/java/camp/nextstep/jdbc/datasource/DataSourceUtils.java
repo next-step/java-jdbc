@@ -1,7 +1,7 @@
 package camp.nextstep.jdbc.datasource;
 
 import camp.nextstep.jdbc.CannotGetJdbcConnectionException;
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import camp.nextstep.jdbc.transaction.TransactionSynchronizationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
