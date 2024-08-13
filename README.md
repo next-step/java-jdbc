@@ -82,6 +82,8 @@ update users set account = ?, password = ?, email = ? where id = ?
 
 ## 4단계 - 트랜잭션 동기화 구현하기
 - TransactionSynchronizationManager
+  - init
+    - initialValue를 new HashMap으로 돌게 재정의하여 ThreadLocal에서 값을 가져올때 HashMap이 초기화되도록 한다.
   - getResource
     - 현재 Thread에 DataSource에 해당하는 Connection이 있다면 그 값을 반환한다
     - 없으면 `Optional.empty()`가 된다
