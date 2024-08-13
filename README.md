@@ -100,3 +100,13 @@ update users set account = ?, password = ?, email = ? where id = ?
     - resource가 없는 경우 새 connection을 바인딩하여 반환한다.
   - releaseConnection
     - dataSource를 받아 unbindResource를 실행한다
+
+- TransactionManager
+  - getTransaction
+    - 현재 실행에 필요한 Connection을 받아 setAutoCommit을 false로 둔다
+  - commit
+    - connection을 commit한다
+    - 이후 해당 connection을 close 처리한다
+  - rollback
+    - connection을 rollback한다
+    - 이후 해당 connection을 close 처리한다
