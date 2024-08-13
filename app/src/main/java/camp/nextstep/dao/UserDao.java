@@ -30,17 +30,7 @@ public class UserDao {
 
     public void insert(final User user) {
         final var sql = "insert into users (account, password, email) values (?, ?, ?)";
-        final KeyHolder keyHolder = new KeyHolder();
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder);
-
-        user.setId(keyHolder.getKey().longValue());
+        jdbcTemplate.update(sql, user.getAccount(), user.getPassword(), user.getEmail());
     }
 
     public void update(final User user) {

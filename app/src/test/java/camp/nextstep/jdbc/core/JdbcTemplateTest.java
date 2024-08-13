@@ -39,7 +39,7 @@ class JdbcTemplateTest {
     @Test
     public void update_insert() throws Exception {
         // given
-        final User user = new User(1L, "account", "password", "email");
+        final User user = new User(1L, "account1", "password", "email");
         final var sql = "insert into users (account, password, email) values (?, ?, ?)";
 
         // when
@@ -49,140 +49,75 @@ class JdbcTemplateTest {
         final User actual = findUserByAccount(user.getAccount());
         assertThat(actual).isNotNull()
                 .extracting("account", "password", "email")
-                .contains("account", "password", "email");
+                .contains("account1", "password", "email");
     }
 
     @DisplayName("update query 를 받아 실행 하면 데이터가 수정 된다")
     @Test
     public void update_update() throws Exception {
         // given
-        final User user = new User(1L, "account", "password", "email");
+        final User user = new User(1L, "account1", "password", "email");
         final var insertSql = "insert into users (account, password, email) values (?, ?, ?)";
-        final KeyHolder keyHolder = new KeyHolder();
+        jdbcTemplate.update(insertSql, user.getAccount(), user.getPassword(), user.getEmail());
 
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder);
-        final User updateUser = new User(1L, "account1", "password1", "email1");
-        final var updateSql = "update users set account=?, password=?, email=? where id=?";
+        final User updateUser = new User(1L, "account2", "password1", "email1");
+        final var updateSql = "update users set account=?, password=?, email=? where account=?";
 
         // when
-        jdbcTemplate.update(updateSql, updateUser.getAccount(), updateUser.getPassword(), updateUser.getEmail(), keyHolder.getKey());
+        jdbcTemplate.update(updateSql, updateUser.getAccount(), updateUser.getPassword(), updateUser.getEmail(), user.getAccount());
 
         // then
-        final Long id = (Long) keyHolder.getKey();
-        final User actual = findUserById(id);
+        final User actual = findUserByAccount(updateUser.getAccount());
         assertThat(actual).isNotNull()
-                .extracting("id", "account", "password", "email")
-                .contains(id, "account1", "password1", "email1");
+                .extracting("account", "password", "email")
+                .contains("account2", "password1", "email1");
     }
 
     @DisplayName("delete query 를 받아 실행 하면 데이터가 삭제 된다")
     @Test
     public void update_delete() throws Exception {
         // given
-        final User user = new User(1L, "account", "password", "email");
+        final User user = new User(1L, "account3", "password", "email");
         final var insertSql = "insert into users (account, password, email) values (?, ?, ?)";
-        final KeyHolder keyHolder = new KeyHolder();
+        jdbcTemplate.update(insertSql, user.getAccount(), user.getPassword(), user.getEmail());
 
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder);
-        final var deleteSql = "delete from users where id=?";
+        final var deleteSql = "delete from users where account=?";
 
         // when
-        jdbcTemplate.update(deleteSql, keyHolder.getKey());
+        jdbcTemplate.update(deleteSql, user.getAccount());
 
         // then
-        final User actual = findUserById(user.getId());
+        final User actual = findUserByAccount(user.getAccount());
         assertThat(actual).isNull();
-    }
-
-    @DisplayName("새로운 데이터를 저장할 때, KeyHolder 를 파라미터로 받으면 생성된 PK 를 keyHolder 에 담는다")
-    @Test
-    public void update_keyHolder() throws Exception {
-        // given
-        final User user = new User(2L, "account", "password", "email");
-        final var sql = "insert into users (account, password, email) values (?, ?, ?)";
-        final KeyHolder keyHolder = new KeyHolder();
-
-        // when
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder);
-
-        // then
-        assertThat(keyHolder.getKey()).isNotNull();
     }
 
     @DisplayName("select query 와 파라미터를 이용해 단일 객체를 조회 한다")
     @Test
     public void queryForObject() throws Exception {
         // given
-        final User user = new User(1L, "account", "password", "email");
+        final User user = new User(1L, "account4", "password", "email");
         final var insertSql = "insert into users (account, password, email) values (?, ?, ?)";
-        final KeyHolder keyHolder = new KeyHolder();
+        jdbcTemplate.update(insertSql, user.getAccount(), user.getPassword(), user.getEmail());
 
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder);
-        final var sql = "select * from users where id=?";
+        final var sql = "select * from users where account=?";
 
         // when
-        final User actual = jdbcTemplate.queryForObject(sql, new Object[]{keyHolder.getKey()}, new UserRowMapper());
+        final User actual = jdbcTemplate.queryForObject(sql, new Object[]{user.getAccount()}, new UserRowMapper());
 
         // then
         assertThat(actual).isNotNull()
                 .extracting("account", "password", "email")
-                .contains("account", "password", "email");
+                .contains("account4", "password", "email");
     }
 
     @DisplayName("select 쿼리로 단일 객체를 조회할 때, 조회 결과가 두개 이상인 경우 예외를 던진다")
     @Test
     public void queryForObject_duplicated() throws Exception {
         // given
-        final User user = new User(1L, "account", "password", "email");
+        final User user = new User(1L, "account5", "password", "email");
         final var insertSql = "insert into users (account, password, email) values (?, ?, ?)";
-        final KeyHolder keyHolder1 = new KeyHolder();
-        final KeyHolder keyHolder2 = new KeyHolder();
-
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder1);
-
-        jdbcTemplate.update((connection) -> {
-            final PreparedStatement pstmt = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, user.getAccount());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-
-            return pstmt;
-        }, keyHolder2);
+        jdbcTemplate.update(insertSql, user.getAccount(), user.getPassword(), user.getEmail());
+        jdbcTemplate.update(insertSql, user.getAccount(), user.getPassword(), user.getEmail());
 
         final var sql = "select * from users where account=?";
 
@@ -196,7 +131,7 @@ class JdbcTemplateTest {
     @Test
     public void queryForObject_empty() throws Exception {
         // given
-        final User user = new User(1L, "account", "password", "email");
+        final User user = new User(1L, "account6", "password", "email");
         final var sql = "select * from users where account=?";
 
         // when then
@@ -210,7 +145,7 @@ class JdbcTemplateTest {
     public void query() throws Exception {
         // given
         for (long i = 0; i < 10; i++) {
-            final User user = new User(i, "account" + i, "password", "email");
+            final User user = new User(i, "account7 - " + i, "password", "email");
             final var sql = "insert into users (account, password, email) values (?, ?, ?)";
             jdbcTemplate.update(sql, user.getAccount(), user.getPassword(), user.getEmail());
         }
@@ -223,7 +158,7 @@ class JdbcTemplateTest {
         assertThat(actual).hasSize(10)
                 .extracting(User::getAccount)
                 .containsExactlyInAnyOrder(
-                        "account0", "account1", "account2", "account3", "account4", "account5", "account6", "account7", "account8", "account9"
+                        "account7 - 0", "account7 - 1", "account7 - 2", "account7 - 3", "account7 - 4", "account7 - 5", "account7 - 6", "account7 - 7", "account7 - 8", "account7 - 9"
                 );
     }
 
@@ -251,30 +186,4 @@ class JdbcTemplateTest {
 
         return null;
     }
-
-    private User findUserById(final Long id) {
-        final String sql = "SELECT id, account, password, email FROM users WHERE id = ?";
-
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement pstmt = connection.prepareStatement(sql)) {
-
-            pstmt.setLong(1, id);
-
-            try (final ResultSet resultSet = pstmt.executeQuery()) {
-                if (resultSet.next()) {
-                    return new User(
-                            resultSet.getLong("id"),
-                            resultSet.getString("account"),
-                            resultSet.getString("password"),
-                            resultSet.getString("email")
-                    );
-                }
-            }
-        } catch (final SQLException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
 }
