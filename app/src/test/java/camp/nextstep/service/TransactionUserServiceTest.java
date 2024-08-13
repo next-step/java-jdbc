@@ -5,6 +5,7 @@ import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.jdbc.transaction.DataSourceTransactionManager;
 import camp.nextstep.jdbc.transaction.TransactionManager;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +28,7 @@ class TransactionUserServiceTest {
     void setUp() {
         final var myConfiguration = new MyConfiguration();
         this.dataSource = myConfiguration.dataSource();
-        this.transactionManager = new TransactionManager(dataSource);
+        this.transactionManager = new DataSourceTransactionManager(dataSource);
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.userDao = new UserDao(jdbcTemplate);
 

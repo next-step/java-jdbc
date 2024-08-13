@@ -8,11 +8,11 @@ import java.sql.SQLException;
 
 import static org.mockito.Mockito.*;
 
-class TransactionManagerTest {
+class DataSourceTransactionManagerTest {
 
     private final DataSource dataSource = mock(DataSource.class);
     private final Connection connection = mock(Connection.class);
-    private final TransactionManager transactionManager = new TransactionManager(dataSource);
+    private final DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
 
     @Test
     void autoCommit이_false인_connection을_생성한다() throws SQLException {
