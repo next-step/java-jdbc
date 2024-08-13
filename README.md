@@ -34,4 +34,17 @@
   - [x] ResultSet 생성 
   - [x] 예외 처리 
   - [x] 트랜잭션 관리 
-  - [x] Connection, Statement, ResultSet 객체 close 
+  - [x] Connection, Statement, ResultSet 객체 close
+
+### 🚀 3단계 - Transaction 적용하기
+- [] User의 비밀번호를 변경할 수 있는 기능 추가하기 
+  - [] 비밀번호를 변경하면 변경 이력을 남긴다 (누가, 언제, 어떤 비밀번호로 바꿨는지)
+- [] `changePassword()` 메서드가 원자성을 보장하도록 구현하기 
+  - [] 메서드 수행 중간에 예외가 발생하여 작업 완료가 불가능해질 경우 롤백
+    - [] 트랜잭션 경계 설정하기 
+    - [] 개별적인 트랜잭션을 하나로 합치기 
+      - as-is
+        - ![img.png](img/img.png)
+      - to-be
+        - UserDao와 UserHistoryDao가 하나의 트랜잭션을 이용해야 한다.
+- [] `UserServiceTest` 테스트 통과하기
