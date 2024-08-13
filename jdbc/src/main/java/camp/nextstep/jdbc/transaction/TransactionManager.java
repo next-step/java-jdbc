@@ -26,22 +26,25 @@ public class TransactionManager {
 
     public void commit() {
         Connection connection = DataSourceUtils.getConnection(dataSource);
-        executeSqlRunner(connection::commit);
-        DataSourceUtils.releaseConnection(dataSource);
+        executeSqlRunnerAndRelease(connection::commit);
     }
 
     public void rollback() {
         Connection connection = DataSourceUtils.getConnection(dataSource);
-        executeSqlRunner(connection::rollback);
-        DataSourceUtils.releaseConnection(dataSource);
+        executeSqlRunnerAndRelease(connection::rollback);
     }
 
-    private void executeSqlRunner(SqlRunnable sqlRunner) {
+    private void executeSqlRunner(SqlRunnable sqlRunnable) {
         try {
-            sqlRunner.run();
+            sqlRunnable.run();
         } catch (SQLException e) {
             log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
             throw new DataAccessException(e);
         }
+    }
+
+    private void executeSqlRunnerAndRelease(SqlRunnable sqlRunnable) {
+        executeSqlRunner(sqlRunnable);
+        DataSourceUtils.releaseConnection(dataSource);
     }
 }
