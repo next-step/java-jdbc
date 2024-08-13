@@ -93,3 +93,10 @@ update users set account = ?, password = ?, email = ? where id = ?
   - unbindResource
     - 요청된 key에 해당하는 값이 없는 경우 예외를 던진다
     - 요청된 key에 해당하는 값이 있는 경우 바인딩된 connection을 제거하고 connection.close한다
+
+- DataSourceUtils
+  - bindConnection
+    - 현재 Thread에서 요청받은 DataSource에 해당하는 connection을 반환한다.
+    - resource가 없는 경우 새 connection을 바인딩하여 반환한다.
+  - releaseConnection
+    - dataSource를 받아 unbindResource를 실행한다
