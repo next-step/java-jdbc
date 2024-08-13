@@ -1,7 +1,7 @@
 package camp.nextstep.controller;
 
 import camp.nextstep.dto.UserDto;
-import camp.nextstep.service.AppUserService;
+import camp.nextstep.service.UserService;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Controller;
 import com.interface21.web.bind.annotation.RequestMapping;
@@ -14,10 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 @Controller
 public class RegisterController {
 
-    private final AppUserService userService;
+    private final UserService userService;
 
     @Autowired
-    public RegisterController(final AppUserService userService) {
+    public RegisterController(final UserService userService) {
         this.userService = userService;
     }
 
