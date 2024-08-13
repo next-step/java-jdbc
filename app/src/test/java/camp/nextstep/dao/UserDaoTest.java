@@ -1,6 +1,7 @@
 package camp.nextstep.dao;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
@@ -41,11 +42,23 @@ class UserDaoTest {
     }
 
     @Test
+    void findByIdThrowException() {
+        assertThatThrownBy(() -> userDao.findById(13948L))
+                .isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
     void findByAccount() {
         final var account = "gugu";
         final var user = userDao.findByAccount(account);
 
         assertThat(user.getAccount()).isEqualTo(account);
+    }
+
+    @Test
+    void findByAccountThrowException() {
+        assertThatThrownBy(() -> userDao.findByAccount("prevStep"))
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test

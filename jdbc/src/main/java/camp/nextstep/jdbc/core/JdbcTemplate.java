@@ -6,76 +6,75 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JdbcTemplate {
-    private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
-
     private final DataSource dataSource;
 
     public JdbcTemplate(final DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public void update(String sql, List<?> params) {
-        printLog(sql, params);
+    public void update(String query, Object... args) {
+        update(query, new ArgumentPreparedStatementSetter(args));
+    }
 
+    public void update(String query, PreparedStatementSetter preparedStatementSetter) {
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            setUpParameters(pstmt, params);
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
+            preparedStatementSetter.setValues(pstmt);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
 
-    public <T> T selectOne(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
-        printLog(sql, params);
+    public <T> Optional<T> selectOne(String query, ResultSetHandler<T> resultSetHandler, Object... args) {
+        return selectOne(query, new ArgumentPreparedStatementSetter(args), resultSetHandler);
+    }
 
+    public <T> Optional<T> selectOne(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            setUpParameters(pstmt, params);
-
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
+            preparedStatementSetter.setValues(pstmt);
             return getOneResult(resultSetHandler, pstmt);
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
 
-    private <T> T getOneResult(ResultSetHandler<T> resultSetHandler, PreparedStatement pstmt) throws SQLException {
+    private <T> Optional<T> getOneResult(ResultSetHandler<T> resultSetHandler, PreparedStatement pstmt) throws SQLException {
         try (ResultSet rs = pstmt.executeQuery()) {
             rs.last();
             int rowNumber = rs.getRow();
             if (rowNumber == 1) {
-                return resultSetHandler.handle(rs);
+                return Optional.of(resultSetHandler.handle(rs));
             }
 
-            if (rowNumber < 1) {
-                return null;
+            if (rowNumber == 0) {
+                return Optional.empty();
             }
 
             throw new NotSingleResultSetException();
         }
     }
 
-    public <T> List<T> selectAll(String sql, ResultSetHandler<T> resultSetHandler) {
-        return selectAll(sql, List.of(), resultSetHandler);
+    public <T> List<T> selectAll(String query, ResultSetHandler<T> resultSetHandler) {
+        return selectAll(query, pstmt -> {}, resultSetHandler);
     }
 
-    public <T> List<T> selectAll(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
-        printLog(sql, params);
+    public <T> List<T> selectAll(String query, ResultSetHandler<T> resultSetHandler, Object... args) {
+        return selectAll(query, new ArgumentPreparedStatementSetter(args), resultSetHandler);
+    }
 
+    public <T> List<T> selectAll(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         try(Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            setUpParameters(pstmt, params);
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
+            preparedStatementSetter.setValues(pstmt);
             return getMultipleResults(resultSetHandler, pstmt);
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
 
@@ -86,16 +85,6 @@ public class JdbcTemplate {
                 results.add(resultSetHandler.handle(rs));
             }
             return results;
-        }
-    }
-
-    private void printLog(String sql, List<?> params) {
-        log.info("query : {}, params : {}", sql, params);
-    }
-
-    private void setUpParameters(PreparedStatement pstmt, List<?> params) throws SQLException {
-        for (int i = 0; i < params.size(); i++) {
-            pstmt.setObject(i + 1, params.get(i));
         }
     }
 }
