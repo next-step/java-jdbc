@@ -110,3 +110,8 @@ update users set account = ?, password = ?, email = ? where id = ?
   - rollback
     - connection을 rollback한다
     - 이후 해당 connection을 close 처리한다
+
+- TransactionService 추상화
+  - UserService를 인터페이스로 두고 AppService와 TxService로 분리한다
+  - AppService는 transaction 관련 로직없이 동작한다
+  - TxService는 필요 부분에 transaction 처리를 한다
