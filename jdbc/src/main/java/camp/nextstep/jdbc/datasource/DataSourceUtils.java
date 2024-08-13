@@ -2,12 +2,16 @@ package camp.nextstep.jdbc.datasource;
 
 import camp.nextstep.jdbc.CannotGetJdbcConnectionException;
 import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public abstract class DataSourceUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(DataSourceUtils.class);
 
     private DataSourceUtils() {}
 
@@ -21,6 +25,7 @@ public abstract class DataSourceUtils {
             Connection connection = dataSource.getConnection();
             return TransactionSynchronizationManager.bindResource(dataSource, connection);
         } catch (SQLException ex) {
+            logSqlException(ex);
             throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", ex);
         }
     }
@@ -29,7 +34,12 @@ public abstract class DataSourceUtils {
         try {
             TransactionSynchronizationManager.unbindResource(dataSource);
         } catch (SQLException ex) {
+            logSqlException(ex);
             throw new CannotGetJdbcConnectionException("Failed to close JDBC Connection");
         }
+    }
+
+    private static void logSqlException(SQLException e) {
+        log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
     }
 }
