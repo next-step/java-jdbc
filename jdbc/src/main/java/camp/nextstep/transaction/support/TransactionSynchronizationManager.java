@@ -22,7 +22,10 @@ public final class TransactionSynchronizationManager {
         return Optional.ofNullable(currentResources.get(key));
     }
 
-    public static void bindResource(DataSource key, Connection value) {
+    public static Connection bindResource(DataSource key, Connection value) {
+        Map<DataSource, Connection> currentResources = resources.get();
+        currentResources.put(key, value);
+        return value;
     }
 
     public static Connection unbindResource(DataSource key) {

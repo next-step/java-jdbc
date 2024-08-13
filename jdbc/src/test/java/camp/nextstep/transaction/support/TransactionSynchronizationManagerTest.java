@@ -17,4 +17,13 @@ class TransactionSynchronizationManagerTest {
         Optional<Connection> actual = TransactionSynchronizationManager.findResource(dataSource);
         assertThat(actual).isEmpty();
     }
+
+    @Test
+    void 요청된_DataSource로_값을_바인딩한다() {
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+
+        Connection actual = TransactionSynchronizationManager.bindResource(dataSource, connection);
+        assertThat(actual).isEqualTo(connection);
+    }
 }
