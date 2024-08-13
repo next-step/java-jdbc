@@ -33,4 +33,15 @@ class TransactionManagerTest {
         verify(connection).commit();
         verify(connection).close();
     }
+
+    @Test
+    void rollback후_Connection을_close처리한다() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        doNothing().when(connection).rollback();
+        doNothing().when(connection).close();
+
+        transactionManager.rollback();
+        verify(connection).rollback();
+        verify(connection).close();
+    }
 }

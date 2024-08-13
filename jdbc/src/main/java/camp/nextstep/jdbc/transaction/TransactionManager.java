@@ -40,6 +40,17 @@ public class TransactionManager {
         DataSourceUtils.releaseConnection(dataSource);
     }
 
+    public void rollback() {
+        Connection connection = DataSourceUtils.getConnection(dataSource);
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            logSQLException(e);
+            throw new DataAccessException(e);
+        }
+        DataSourceUtils.releaseConnection(dataSource);
+    }
+
     private void logSQLException(SQLException e) {
         log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
     }
