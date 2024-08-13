@@ -7,6 +7,7 @@ import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.jdbc.transaction.TransactionManager;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TransactionUserServiceTest {
 
+    private DataSource dataSource;
     private TransactionManager transactionManager;
     private JdbcTemplate jdbcTemplate;
     private UserDao userDao;
@@ -24,12 +26,17 @@ class TransactionUserServiceTest {
     @BeforeEach
     void setUp() {
         final var myConfiguration = new MyConfiguration();
-        DataSource dataSource = myConfiguration.dataSource();
+        this.dataSource = myConfiguration.dataSource();
         this.transactionManager = new TransactionManager(dataSource);
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.userDao = new UserDao(jdbcTemplate);
 
         DatabasePopulatorUtils.execute(dataSource);
+    }
+
+    @AfterEach
+    void afterEach() {
+        DatabasePopulatorUtils.cleanTable(dataSource);
     }
 
     @Test
