@@ -20,6 +20,16 @@ class TransactionSynchronizationManagerTest {
     }
 
     @Test
+    void 요청된_DataSource에_해당하는_connection이_있는_경우_반환한다() {
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+        TransactionSynchronizationManager.bindResource(dataSource, connection);
+
+        Optional<Connection> actual = TransactionSynchronizationManager.findResource(dataSource);
+        assertThat(actual).isEqualTo(Optional.of(connection));
+    }
+
+    @Test
     void 요청된_DataSource로_값을_바인딩한다() {
         DataSource dataSource = mock(DataSource.class);
         Connection connection = mock(Connection.class);
