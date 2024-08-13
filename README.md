@@ -92,4 +92,4 @@ update users set account = ?, password = ?, email = ? where id = ?
     - resources map에 값을 넣고 connection을 반환한다
   - unbindResource
     - 요청된 key에 해당하는 값이 없는 경우 예외를 던진다
-    - 요청된 key에 해당하는 값이 있는 경우 바인딩된 connection을 제거한다
+    - 요청된 key에 해당하는 값이 있는 경우 바인딩된 connection을 제거하고 connection.close한다

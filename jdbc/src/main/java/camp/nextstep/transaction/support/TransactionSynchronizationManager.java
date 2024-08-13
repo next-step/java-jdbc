@@ -2,6 +2,7 @@ package camp.nextstep.transaction.support;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -31,11 +32,12 @@ public final class TransactionSynchronizationManager {
         return value;
     }
 
-    public static Connection unbindResource(DataSource key) {
+    public static void unbindResource(DataSource key) throws SQLException {
         Map<DataSource, Connection> currentResources = resources.get();
         if (!currentResources.containsKey(key)) {
             throw new IllegalArgumentException("key에 해당하는 바인딩된 DataSource가 없습니다.");
         }
-        return null;
+        Connection connection = currentResources.remove(key);
+        connection.close();
     }
 }
