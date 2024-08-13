@@ -1,7 +1,7 @@
 package camp.nextstep.controller;
 
 import camp.nextstep.domain.User;
-import camp.nextstep.service.UserService;
+import camp.nextstep.service.AppUserService;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Controller;
 import com.interface21.web.bind.annotation.RequestMapping;
@@ -18,10 +18,10 @@ public class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
-    private final UserService userService;
+    private final AppUserService userService;
 
     @Autowired
-    public LoginController(final UserService userService) {
+    public LoginController(final AppUserService userService) {
         this.userService = userService;
     }
 
