@@ -79,3 +79,15 @@ update users set account = ?, password = ?, email = ? where id = ?
   - 트랜잭션 시작 시 auto commit를 false로 두어 commit 실행을 제한한다
   - 비즈니스 실행이 모두 종료되었다면 commit한다
   - 트랜잭션에 묶이는 dao들이 모두 같은 connection을 사용하도록 한다
+
+## 4단계 - 트랜잭션 동기화 구현하기
+- TransactionSynchronizationManager
+  - getResource
+    - 현재 Thread에 DataSource에 해당하는 Connection이 있다면 그 값을 반환한다
+    - 없으면 `Optional.empty()`가 된다
+  - bindResource
+    - 이미 key에 Connection이 있는 경우 예외를 던진다
+    - resources map에 값을 넣고 connection을 반환한다
+  - unbindResource
+    - 요청된 key에 해당하는 값이 없는 경우 예외를 던진다
+    - 요청된 key에 해당하는 값이 있는 경우 바인딩된 connection을 제거한다
