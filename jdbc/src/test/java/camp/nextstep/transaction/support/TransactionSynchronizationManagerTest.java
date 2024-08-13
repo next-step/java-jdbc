@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 class TransactionSynchronizationManagerTest {
@@ -25,5 +26,16 @@ class TransactionSynchronizationManagerTest {
 
         Connection actual = TransactionSynchronizationManager.bindResource(dataSource, connection);
         assertThat(actual).isEqualTo(connection);
+    }
+
+    @Test
+    void 이미_바인딩된_DataSource로_바인딩하려는_경우_예외를_던진다() {
+        DataSource dataSource = mock(DataSource.class);
+        Connection connection = mock(Connection.class);
+        TransactionSynchronizationManager.bindResource(dataSource, connection);
+
+        assertThatThrownBy(() -> TransactionSynchronizationManager.bindResource(dataSource, connection))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이미 바인딩된 DataSource입니다.");
     }
 }

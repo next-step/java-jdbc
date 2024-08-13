@@ -24,6 +24,9 @@ public final class TransactionSynchronizationManager {
 
     public static Connection bindResource(DataSource key, Connection value) {
         Map<DataSource, Connection> currentResources = resources.get();
+        if (currentResources.containsKey(key)) {
+            throw new IllegalArgumentException("이미 바인딩된 DataSource입니다.");
+        }
         currentResources.put(key, value);
         return value;
     }
