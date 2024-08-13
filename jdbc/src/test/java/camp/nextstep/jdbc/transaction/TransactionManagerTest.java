@@ -22,4 +22,15 @@ class TransactionManagerTest {
         transactionManager.getTransaction();
         verify(connection).setAutoCommit(false);
     }
+
+    @Test
+    void commit후_Connection을_close처리한다() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        doNothing().when(connection).commit();
+        doNothing().when(connection).close();
+
+        transactionManager.commit();
+        verify(connection).commit();
+        verify(connection).close();
+    }
 }

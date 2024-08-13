@@ -24,8 +24,23 @@ public class TransactionManager {
         try {
             connection.setAutoCommit(false);
         } catch (SQLException e) {
-            log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
+            logSQLException(e);
             throw new DataAccessException(e);
         }
+    }
+
+    public void commit() {
+        Connection connection = DataSourceUtils.getConnection(dataSource);
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            logSQLException(e);
+            throw new DataAccessException(e);
+        }
+        DataSourceUtils.releaseConnection(dataSource);
+    }
+
+    private void logSQLException(SQLException e) {
+        log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
     }
 }
