@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
@@ -46,11 +45,6 @@ public class JdbcTemplate {
     public int update(String sql, Object... args) {
         validateSql(sql, args);
         return preparedStatementSetter.executeQuery(sql, PreparedStatement::executeUpdate, args);
-    }
-
-    public int update(Connection connection, String sql, Object... args) {
-        validateSql(sql, args);
-        return preparedStatementSetter.executeQuery(connection, sql, PreparedStatement::executeUpdate, args);
     }
 
     private void validateSql(String sql, Object... args) {
