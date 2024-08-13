@@ -2,23 +2,29 @@ package camp.nextstep.dao;
 
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
+import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static support.CleanUp.cleanUp;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserDaoTest {
 
-    private UserDao userDao;
+    private static final DataSource dataSource = new MyConfiguration().dataSource();
+    private static final JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-    @BeforeEach
-    void setup() {
-        final var myConfiguration = new MyConfiguration();
-        final var dataSource = myConfiguration.dataSource();
+    private static final UserDao userDao = new UserDao(jdbcTemplate);
+
+    @BeforeAll
+    static void setup() {
         DatabasePopulatorUtils.execute(dataSource);
-
-        userDao = new UserDao(dataSource);
         final var user = new User("gugu", "password", "hkkang@woowahan.com");
         userDao.insert(user);
     }
@@ -31,18 +37,21 @@ class UserDaoTest {
     }
 
     @Test
+    @Order(1)
     void findById() {
-        final var user = userDao.findById(1L);
+        final var actual = userDao.findById(1L);
 
-        assertThat(user.getAccount()).isEqualTo("gugu");
+        assertThat(actual.getAccount()).isEqualTo("gugu");
     }
 
     @Test
     void findByAccount() {
-        final var account = "gugu";
-        final var user = userDao.findByAccount(account);
+        final var user = new User("find-account", "password", "hkkang@woowahan.com");
+        userDao.insert(user);
 
-        assertThat(user.getAccount()).isEqualTo(account);
+        final var actual = userDao.findByAccount(user.getAccount());
+
+        assertThat(actual.getAccount()).isEqualTo("find-account");
     }
 
     @Test
@@ -51,21 +60,20 @@ class UserDaoTest {
         final var user = new User(account, "password", "hkkang@woowahan.com");
         userDao.insert(user);
 
-        final var actual = userDao.findById(2L);
+        final var actual = userDao.findByAccount(user.getAccount());
 
         assertThat(actual.getAccount()).isEqualTo(account);
     }
 
     @Test
+    @Order(2)
     void update() {
-        final var newPassword = "password99";
-        final var user = userDao.findById(1L);
-        user.changePassword(newPassword);
+        final var user = new User(1L, "update-gugu", "password", "hkkang@woowahan.com");
 
         userDao.update(user);
 
-        final var actual = userDao.findById(1L);
+        final var actual = userDao.findByAccount(user.getAccount());
 
-        assertThat(actual.getPassword()).isEqualTo(newPassword);
+        assertThat(actual.getAccount()).isEqualTo("update-gugu");
     }
 }
