@@ -25,7 +25,7 @@ public abstract class DataSourceUtils {
             Connection connection = dataSource.getConnection();
             return TransactionSynchronizationManager.bindResource(dataSource, connection);
         } catch (SQLException ex) {
-            logSqlException(ex);
+            logSQLException(ex);
             throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", ex);
         }
     }
@@ -34,12 +34,12 @@ public abstract class DataSourceUtils {
         try {
             TransactionSynchronizationManager.unbindResource(dataSource);
         } catch (SQLException ex) {
-            logSqlException(ex);
+            logSQLException(ex);
             throw new CannotGetJdbcConnectionException("Failed to close JDBC Connection");
         }
     }
 
-    private static void logSqlException(SQLException e) {
+    private static void logSQLException(SQLException e) {
         log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
     }
 }
