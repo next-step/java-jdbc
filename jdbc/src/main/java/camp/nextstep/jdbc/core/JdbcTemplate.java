@@ -29,14 +29,14 @@ public class JdbcTemplate {
             setParams(parameters, pstmt);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new JdbcException("failed update - " + e.getMessage(), e);
         }
     }
 
     public <T> T queryForObject(final String sql, final Object[] parameters, final RowMapper<T> rowMapper) {
         final List<T> results = query(sql, parameters, rowMapper);
         if (results.size() != 1) {
-            throw new RuntimeException("Expected 1 result, got " + results.size());
+            throw new JdbcException("Expected 1 result, got " + results.size());
         }
         return results.get(0);
     }
@@ -50,7 +50,7 @@ public class JdbcTemplate {
                 return mappingResult(rowMapper, resultSet);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new JdbcException("failed query - " + e.getMessage(), e);
         }
     }
 
