@@ -1,18 +1,22 @@
 package camp.nextstep.config;
 
+import static java.util.Arrays.asList;
+
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.transaction.TransactionHandler;
 import com.interface21.context.annotation.Bean;
 import com.interface21.context.annotation.ComponentScan;
 import com.interface21.context.annotation.Configuration;
 import com.interface21.web.method.support.HandlerMethodArgumentResolver;
 import com.interface21.webmvc.servlet.mvc.tobe.HandlerConverter;
-import com.interface21.webmvc.servlet.mvc.tobe.support.*;
-import org.h2.jdbcx.JdbcDataSource;
-
-import javax.sql.DataSource;
+import com.interface21.webmvc.servlet.mvc.tobe.support.HttpRequestArgumentResolver;
+import com.interface21.webmvc.servlet.mvc.tobe.support.HttpResponseArgumentResolver;
+import com.interface21.webmvc.servlet.mvc.tobe.support.ModelArgumentResolver;
+import com.interface21.webmvc.servlet.mvc.tobe.support.PathVariableArgumentResolver;
+import com.interface21.webmvc.servlet.mvc.tobe.support.RequestParamArgumentResolver;
 import java.util.List;
-
-import static java.util.Arrays.asList;
+import javax.sql.DataSource;
+import org.h2.jdbcx.JdbcDataSource;
 
 @Configuration
 @ComponentScan({ "camp.nextstep", "com.interface21" })
@@ -30,6 +34,11 @@ public class MyConfiguration {
     @Bean
     public JdbcTemplate jdbcTemplate(final DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public TransactionHandler transactionHandler() {
+        return new TransactionHandler();
     }
 
     @Bean
