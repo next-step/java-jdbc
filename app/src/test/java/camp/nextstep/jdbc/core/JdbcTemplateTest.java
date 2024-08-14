@@ -35,6 +35,19 @@ class JdbcTemplateTest {
         cleanUp(dataSource);
     }
 
+    @DisplayName("쿼리에 매핑 되어야 할 개수와 실제 파라미터 개수가 일치 하지 않으면 예외를 던진다")
+    @Test
+    public void checkParameterNum() throws Exception {
+        // given
+        final var sql = "insert into users (account, password, email) values (?, ?, ?)";
+        final Object[] parameters = {"account", "password"};
+
+        // when then
+        assertThatThrownBy(() -> jdbcTemplate.update(sql, parameters))
+                .isInstanceOf(JdbcException.class)
+                .hasMessage("Expected parameter num: " + 3 + ", got " + 2);
+    }
+
     @DisplayName("insert query 를 받아 실행 하면 데이터가 저장 된다")
     @Test
     public void update_insert() throws Exception {
