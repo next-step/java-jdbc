@@ -16,7 +16,7 @@ public class RowMapper<T> {
     public T mapRow(ResultSet resultSet) {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
-            setFieldValues(instance, clazz.getDeclaredFields(), resultSet);
+            setFieldValues(instance, resultSet);
             return instance;
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
                  InvocationTargetException e) {
@@ -24,8 +24,8 @@ public class RowMapper<T> {
         }
     }
 
-    private void setFieldValues(Object instance, Field[] fields, ResultSet resultSet) {
-        Arrays.stream(fields)
+    private void setFieldValues(Object instance, ResultSet resultSet) {
+        Arrays.stream(clazz.getDeclaredFields())
             .forEach(field -> {
                 try {
                     field.setAccessible(true);
