@@ -2,18 +2,11 @@ package camp.nextstep.dao;
 
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
-import camp.nextstep.jdbc.core.RowMapperImpl;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 
 @Repository
 public class UserDao {
@@ -42,14 +35,14 @@ public class UserDao {
     }
 
     public List<User> findAll() {
-        return jdbcTemplate.queryForList(SELECT_ALL_SQL, new RowMapperImpl<>(User.class));
+        return jdbcTemplate.queryForList(SELECT_ALL_SQL, User.class);
     }
 
     public User findById(final Long id) {
-        return jdbcTemplate.queryForObject(SELECT_BY_ID_SQL, new RowMapperImpl<>(User.class), id);
+        return jdbcTemplate.queryForObject(SELECT_BY_ID_SQL, User.class, id);
     }
 
     public User findByAccount(final String account) {
-        return jdbcTemplate.queryForObject(SELECT_BY_ACCOUNT_SQL, new RowMapperImpl<>(User.class), account);
+        return jdbcTemplate.queryForObject(SELECT_BY_ACCOUNT_SQL, User.class, account);
     }
 }

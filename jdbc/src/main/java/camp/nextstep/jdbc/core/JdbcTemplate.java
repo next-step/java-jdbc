@@ -20,18 +20,18 @@ public class JdbcTemplate {
         this.dataSource = dataSource;
     }
 
-    public <T> T queryForObject(String sql, RowMapper<T> rowMapper, Object... args) {
-        final List<T> results = queryForList(sql, rowMapper, args);
+    public <T> T queryForObject(String sql, Class<T> clazz, Object... args) {
+        final List<T> results = queryForList(sql, clazz, args);
         if (results.size() != 1) {
             throw new RuntimeException("조회 결과가 1개가 아닙니다.");
         }
         return results.get(0);
     }
 
-    public <T> List<T> queryForList(String sql, RowMapper<T> rowMapper, Object... args) {
+    public <T> List<T> queryForList(String sql, Class<T> clazz, Object... args) {
         try (final PreparedStatement preparedStatement = DataSourceUtils.getConnection(dataSource).prepareStatement(sql)) {
             setQueryParameters(preparedStatement, args);
-            return extractResults(rowMapper, preparedStatement);
+            return extractResults(new RowMapper<>(clazz), preparedStatement);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
