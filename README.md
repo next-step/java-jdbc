@@ -79,3 +79,39 @@ update users set account = ?, password = ?, email = ? where id = ?
   - 트랜잭션 시작 시 auto commit를 false로 두어 commit 실행을 제한한다
   - 비즈니스 실행이 모두 종료되었다면 commit한다
   - 트랜잭션에 묶이는 dao들이 모두 같은 connection을 사용하도록 한다
+
+## 4단계 - 트랜잭션 동기화 구현하기
+- TransactionSynchronizationManager
+  - init
+    - initialValue를 new HashMap으로 돌게 재정의하여 ThreadLocal에서 값을 가져올때 HashMap이 초기화되도록 한다.
+  - findResource
+    - 현재 Thread에 DataSource에 해당하는 Connection이 있다면 그 값을 반환한다
+    - 없으면 `Optional.empty()`가 된다
+  - bindResource
+    - 이미 key에 Connection이 있는 경우 예외를 던진다
+    - resources map에 값을 넣고 connection을 반환한다
+  - unbindResource
+    - 요청된 key에 해당하는 값이 없는 경우 예외를 던진다
+    - 요청된 key에 해당하는 값이 있는 경우 바인딩된 connection을 제거하고 connection.close한다
+
+- DataSourceUtils
+  - bindConnection
+    - 현재 Thread에서 요청받은 DataSource에 해당하는 connection을 반환한다.
+    - resource가 없는 경우 새 connection을 바인딩하여 반환한다.
+  - releaseConnection
+    - dataSource를 받아 unbindResource를 실행한다
+
+- TransactionManager
+  - getTransaction
+    - 현재 실행에 필요한 Connection을 받아 setAutoCommit을 false로 둔다
+  - commit
+    - connection을 commit한다
+    - 이후 해당 connection을 close 처리한다
+  - rollback
+    - connection을 rollback한다
+    - 이후 해당 connection을 close 처리한다
+
+- TransactionService 추상화
+  - UserService를 인터페이스로 두고 AppService와 TxService로 분리한다
+  - AppService는 transaction 관련 로직없이 동작한다
+  - TxService는 필요 부분에 transaction 처리를 한다

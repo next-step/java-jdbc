@@ -1,6 +1,7 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import camp.nextstep.jdbc.sql.SqlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,19 +24,7 @@ public class DefaultPreparedStatementSetter implements PreparedStatementSetter {
 
     @Override
     public <T> T executeQuery(String sql, PreparedStatementParser<T> preparedStatementParser, Object... args) {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            prepareArguments(preparedStatement, args);
-
-            return preparedStatementParser.parse(preparedStatement);
-        } catch (SQLException e) {
-            log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
-            throw new DataAccessException("쿼리 실행 시 오류 발생", e);
-        }
-    }
-
-    @Override
-    public <T> T executeQuery(Connection connection, String sql, PreparedStatementParser<T> preparedStatementParser, Object... args) {
+        Connection connection = DataSourceUtils.getConnection(dataSource);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             prepareArguments(preparedStatement, args);
 

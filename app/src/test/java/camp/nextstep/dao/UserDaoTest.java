@@ -4,23 +4,32 @@ import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UserDaoTest {
 
+    private DataSource dataSource;
     private UserDao userDao;
 
     @BeforeEach
     void setup() {
         final var myConfiguration = new MyConfiguration();
-        final var dataSource = myConfiguration.dataSource();
+        this.dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
         final var jdbcTemplate = new JdbcTemplate(dataSource);
 
         userDao = new UserDao(jdbcTemplate);
+    }
+
+    @AfterEach
+    void afterEach() {
+        DatabasePopulatorUtils.cleanTable(dataSource);
     }
 
     @Test

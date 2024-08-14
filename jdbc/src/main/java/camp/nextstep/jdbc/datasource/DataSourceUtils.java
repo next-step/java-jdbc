@@ -1,37 +1,45 @@
 package camp.nextstep.jdbc.datasource;
 
 import camp.nextstep.jdbc.CannotGetJdbcConnectionException;
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import camp.nextstep.jdbc.transaction.TransactionSynchronizationManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-// 4단계 미션에서 사용할 것
 public abstract class DataSourceUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(DataSourceUtils.class);
 
     private DataSourceUtils() {}
 
     public static Connection getConnection(DataSource dataSource) throws CannotGetJdbcConnectionException {
-        Connection connection = TransactionSynchronizationManager.getResource(dataSource);
-        if (connection != null) {
-            return connection;
-        }
+        return TransactionSynchronizationManager.findResource(dataSource)
+                .orElseGet(() -> bindConnection(dataSource));
+    }
 
+    private static Connection bindConnection(DataSource dataSource) {
         try {
-            connection = dataSource.getConnection();
-            TransactionSynchronizationManager.bindResource(dataSource, connection);
-            return connection;
+            Connection connection = dataSource.getConnection();
+            return TransactionSynchronizationManager.bindResource(dataSource, connection);
         } catch (SQLException ex) {
+            logSQLException(ex);
             throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", ex);
         }
     }
 
-    public static void releaseConnection(Connection connection, DataSource dataSource) {
+    public static void releaseConnection(DataSource dataSource) {
         try {
-            connection.close();
+            TransactionSynchronizationManager.unbindResource(dataSource);
         } catch (SQLException ex) {
+            logSQLException(ex);
             throw new CannotGetJdbcConnectionException("Failed to close JDBC Connection");
         }
+    }
+
+    private static void logSQLException(SQLException e) {
+        log.error("ERROR {} ({}) : {}", e.getErrorCode(), e.getSQLState(), e.getMessage());
     }
 }
