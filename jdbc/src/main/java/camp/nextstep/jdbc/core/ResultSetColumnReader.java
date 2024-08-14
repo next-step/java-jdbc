@@ -56,19 +56,32 @@ public enum ResultSetColumnReader {
         this.mapper = mapper;
     }
 
-    public static Object map(ResultSet resultSet, String columnName, Class<?> clazz) {
-        ResultSetColumnReader reader = TYPE_MAP.get(clazz);
+    public static Object read(ResultSet resultSet, String columnName, Class<?> clazz) {
+        ResultSetColumnReader reader = TYPE_MAP.get(getWrapperClass(clazz));
         if (reader == null) {
             throw new IllegalArgumentException("존재 하지 않는 타입의 필드 입니다.");
         }
-        return reader.map(resultSet, columnName);
+        return reader.apply(resultSet, columnName);
     }
 
-    public Object map(ResultSet resultSet, String columnName) {
+    private Object apply(ResultSet resultSet, String columnName) {
         try {
             return mapper.apply(resultSet, columnName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Class<?> getWrapperClass(Class<?> clazz) {
+        if (clazz == int.class) {
+            return Integer.class;
+        }
+        if (clazz == long.class) {
+            return Long.class;
+        }
+        if (clazz == boolean.class) {
+            return Boolean.class;
+        }
+        return clazz;
     }
 }
