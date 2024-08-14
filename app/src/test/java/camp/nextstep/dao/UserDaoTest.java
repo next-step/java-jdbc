@@ -18,7 +18,7 @@ class UserDaoTest {
         final var myConfiguration = new MyConfiguration();
         final var dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
-        H2DataCleanser.clear(dataSource);
+        H2DataCleanser.clear(dataSource, "users");
 
         userDao = new UserDao(dataSource);
         final var user = new User("gugu", "password", "hkkang@woowahan.com");
