@@ -23,6 +23,7 @@ public class JdbcTemplate {
 
     public void update(final String sql, final Object... parameters) {
         log.debug("query : {}", sql);
+        checkParameterNum(sql, parameters);
 
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -42,6 +43,8 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(final String sql, final Object[] parameters, final RowMapper<T> rowMapper) {
+        checkParameterNum(sql, parameters);
+
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement pstmt = connection.prepareStatement(sql)) {
             setParams(parameters, pstmt);
@@ -54,6 +57,18 @@ public class JdbcTemplate {
         }
     }
 
+    private void checkParameterNum(final String sql, final Object[] parameters) {
+        final int requiredParameterNum = countRequiredParameter(sql);
+
+        if (requiredParameterNum != parameters.length) {
+            throw new JdbcException("Expected parameter num: " + requiredParameterNum + ", got " + parameters.length);
+        }
+    }
+
+    private int countRequiredParameter(final String sql) {
+        return sql.length() - sql.replace("?", "").length();
+    }
+
     private <T> List<T> mappingResult(final RowMapper<T> rowMapper, final ResultSet resultSet) throws SQLException {
         final List<T> result = new ArrayList<>();
         while (resultSet.next()) {
@@ -63,8 +78,7 @@ public class JdbcTemplate {
     }
 
     private void setParams(final Object[] parameters, final PreparedStatement pstmt) throws SQLException {
-        for (int i = 1; i <= parameters.length; i++) {
-            pstmt.setObject(i, parameters[i - 1]);
-        }
+        final PreparedStatementSetter setter = new DefaultPreparedStatementSetter(parameters);
+        setter.setValues(pstmt);
     }
 }
