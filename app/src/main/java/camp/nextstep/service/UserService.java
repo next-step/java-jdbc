@@ -5,6 +5,7 @@ import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
+import camp.nextstep.jdbc.datasource.ConnectionUtils;
 import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
@@ -41,9 +42,7 @@ public class UserService {
     public void changePassword(final long id, final String newPassword, final String createBy) {
         Connection connection = null;
         try {
-            connection = dataSource.getConnection();  // 트랜잭션도 외부 트랜잭션에 참여중일 수도 있음
-            TransactionSynchronizationManager.bindResource(dataSource, connection);
-
+            connection = ConnectionUtils.getConnection(dataSource);
             connection.setAutoCommit(false);
 
             final var user = findById(id);

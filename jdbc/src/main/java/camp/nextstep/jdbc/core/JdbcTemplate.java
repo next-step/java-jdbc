@@ -1,7 +1,7 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import camp.nextstep.jdbc.datasource.ConnectionUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,7 +26,7 @@ public class JdbcTemplate {
     public void update(String query, PreparedStatementSetter preparedStatementSetter) {
         Connection connection = null;
         try {
-            connection = getConnection();
+            connection = ConnectionUtils.getConnection(dataSource);
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 preparedStatementSetter.setValues(pstmt);
                 pstmt.executeUpdate();
@@ -34,24 +34,8 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {
-            closeConnection(connection);
+            ConnectionUtils.closeConnection(connection, dataSource);
         }
-    }
-
-    private void releaseConnection(Connection connection) {
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            throw new DataAccessException("JDBC Connection Release 실패");
-        }
-    }
-
-    private Connection getConnection() throws SQLException {
-        if (TransactionSynchronizationManager.isTransactionActive(dataSource)) {
-            return TransactionSynchronizationManager.getResource(dataSource);
-        }
-
-        return dataSource.getConnection();
     }
 
     public <T> Optional<T> selectOne(String query, ResultSetHandler<T> resultSetHandler, Object... args) {
@@ -62,7 +46,7 @@ public class JdbcTemplate {
     public <T> Optional<T> selectOne(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         Connection connection = null;
         try {
-            connection = getConnection();
+            connection = ConnectionUtils.getConnection(dataSource);
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 preparedStatementSetter.setValues(pstmt);
                 return findOneResult(resultSetHandler, pstmt);
@@ -70,13 +54,7 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {
-            closeConnection(connection);
-        }
-    }
-
-    private void closeConnection(Connection connection) {
-        if (connection != null && !TransactionSynchronizationManager.isTransactionActive(dataSource)) {
-            releaseConnection(connection);
+            ConnectionUtils.closeConnection(connection, dataSource);
         }
     }
 
@@ -108,7 +86,7 @@ public class JdbcTemplate {
     public <T> List<T> selectAll(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         Connection connection = null;
         try {
-            connection = getConnection();
+            connection = ConnectionUtils.getConnection(dataSource);
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 preparedStatementSetter.setValues(pstmt);
                 return getMultipleResults(resultSetHandler, pstmt);
@@ -116,7 +94,7 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {
-            closeConnection(connection);
+            ConnectionUtils.closeConnection(connection, dataSource);
         }
     }
 
