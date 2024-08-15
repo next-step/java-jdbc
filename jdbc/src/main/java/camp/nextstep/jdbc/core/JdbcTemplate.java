@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class JdbcTemplate {
@@ -22,16 +23,17 @@ public class JdbcTemplate {
     }
 
     public void update(final String sql, final Object... parameters) {
-        log.debug("query : {}", sql);
+        log.info("query : {}, params: {}", sql, Arrays.toString(parameters));
         checkParameterNum(sql, parameters);
 
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            setParams(parameters, pstmt);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new JdbcException("failed update - " + e.getMessage(), e);
-        }
+        template(connection -> {
+            try (final PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                setParams(parameters, pstmt);
+                pstmt.executeUpdate();
+            }
+
+            return null;
+        });
     }
 
     public <T> T queryForObject(final String sql, final Object[] parameters, final RowMapper<T> rowMapper) {
@@ -45,16 +47,15 @@ public class JdbcTemplate {
     public <T> List<T> query(final String sql, final Object[] parameters, final RowMapper<T> rowMapper) {
         checkParameterNum(sql, parameters);
 
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            setParams(parameters, pstmt);
+        return template(connection -> {
+            try (final PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                setParams(parameters, pstmt);
 
-            try (final ResultSet resultSet = pstmt.executeQuery()) {
-                return mappingResult(rowMapper, resultSet);
+                try (final ResultSet resultSet = pstmt.executeQuery()) {
+                    return mappingResult(rowMapper, resultSet);
+                }
             }
-        } catch (Exception e) {
-            throw new JdbcException("failed query - " + e.getMessage(), e);
-        }
+        });
     }
 
     private void checkParameterNum(final String sql, final Object[] parameters) {
@@ -80,5 +81,24 @@ public class JdbcTemplate {
     private void setParams(final Object[] parameters, final PreparedStatement pstmt) throws SQLException {
         final PreparedStatementSetter setter = new DefaultPreparedStatementSetter(parameters);
         setter.setValues(pstmt);
+    }
+
+    private <T> T template(final ConnectionCallback<T> consumer) {
+        try {
+            final Connection connection = ConnectionManager.getConnection(dataSource);
+            return doAccept(consumer, connection);
+        } catch (SQLException e) {
+            throw new JdbcException("connection consume error - " + e.getMessage(), e);
+        }
+    }
+
+    private <T> T doAccept(final ConnectionCallback<T> consumer, final Connection connection) throws SQLException {
+        try {
+            return consumer.accept(connection);
+        } finally {
+            if (connection.getAutoCommit()) {
+                connection.close();
+            }
+        }
     }
 }
