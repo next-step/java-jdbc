@@ -1,10 +1,10 @@
 package camp.nextstep.service;
 
+import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
-import camp.nextstep.transaction.TransactionCallback;
 import camp.nextstep.transaction.TransactionHandler;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
@@ -39,14 +39,18 @@ public class UserService {
     }
 
     public void changePassword(final long id, final String newPassword, final String createBy) {
-        TransactionCallback txCallback = () -> targetMethod(id, newPassword, createBy);
-        transactionHandler.executeWithTransaction(dataSource, txCallback);
-    }
+        try {
+            transactionHandler.begin(dataSource);
 
-    private void targetMethod(long id, String newPassword, String createBy) {
-        final var user = findById(id);
-        user.changePassword(newPassword);
-        userDao.update(user);
-        userHistoryDao.log(new UserHistory(user, createBy));
+            final var user = findById(id);
+            user.changePassword(newPassword);
+            userDao.update(user);
+            userHistoryDao.log(new UserHistory(user, createBy));
+
+            transactionHandler.commit(dataSource);
+        } catch (DataAccessException e) {
+            transactionHandler.rollback(dataSource);
+            throw e;
+        }
     }
 }
