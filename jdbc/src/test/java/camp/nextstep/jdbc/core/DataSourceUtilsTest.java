@@ -1,6 +1,6 @@
 package camp.nextstep.jdbc.core;
 
-import org.h2.jdbcx.JdbcDataSource;
+import camp.nextstep.jdbc.support.DataSourceBean;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,15 +11,15 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class ConnectionManagerTest {
+class DataSourceUtilsTest {
 
-    private DataSource dataSource = dataSource();
+    private DataSource dataSource = DataSourceBean.dataSource();
 
     @Test
     @DisplayName("ConnectionManager는 첫 번째 요청에서 새로운 Connection을 반환해야 한다")
     void shouldReturnNewConnectionOnFirstRequest() throws Exception {
         // when
-        final Connection connection = ConnectionManager.getConnection(dataSource);
+        final Connection connection = DataSourceUtils.getConnection(dataSource);
 
         // then
         assertThat(connection).isNotNull();
@@ -29,10 +29,10 @@ class ConnectionManagerTest {
     @DisplayName("ConnectionManager는 동일한 스레드 내에서 같은 Connection을 반환해야 한다")
     void shouldReturnSameConnectionWithinSameThread() throws Exception {
         // given
-        final Connection connection1 = ConnectionManager.getConnection(dataSource);
+        final Connection connection1 = DataSourceUtils.getConnection(dataSource);
 
         // when
-        final Connection connection2 = ConnectionManager.getConnection(dataSource);
+        final Connection connection2 = DataSourceUtils.getConnection(dataSource);
 
         // then
         assertThat(connection1).isSameAs(connection2);
@@ -42,11 +42,11 @@ class ConnectionManagerTest {
     @DisplayName("ConnectionManager는 Connection이 닫힌 후에는 새로운 Connection을 반환해야 한다")
     void shouldReturnNewConnectionAfterClosedConnection() throws Exception {
         // given
-        final Connection connection1 = ConnectionManager.getConnection(dataSource);
+        final Connection connection1 = DataSourceUtils.getConnection(dataSource);
         connection1.close();
 
         // when
-        final Connection connection2 = ConnectionManager.getConnection(dataSource);
+        final Connection connection2 = DataSourceUtils.getConnection(dataSource);
 
         // then
         assertThat(connection2).isNotSameAs(connection1);
@@ -61,7 +61,7 @@ class ConnectionManagerTest {
         // when
         final Thread thread1 = new Thread(() -> {
             try {
-                connections[0] = ConnectionManager.getConnection(dataSource);
+                connections[0] = DataSourceUtils.getConnection(dataSource);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -69,7 +69,7 @@ class ConnectionManagerTest {
 
         Thread thread2 = new Thread(() -> {
             try {
-                connections[1] = ConnectionManager.getConnection(dataSource);
+                connections[1] = DataSourceUtils.getConnection(dataSource);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -86,13 +86,5 @@ class ConnectionManagerTest {
                 () -> assertThat(connections[1]).isNotNull(),
                 () -> assertThat(connections[0]).isNotSameAs(connections[1])
         );
-    }
-
-    private DataSource dataSource() {
-        final var jdbcDataSource = new JdbcDataSource();
-        jdbcDataSource.setUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;");
-        jdbcDataSource.setUser("");
-        jdbcDataSource.setPassword("");
-        return jdbcDataSource;
     }
 }
