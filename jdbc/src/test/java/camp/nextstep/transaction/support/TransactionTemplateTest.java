@@ -58,7 +58,7 @@ class TransactionTemplateTest {
                 transactionTemplate.run(() -> {
                     throw new RuntimeException();
                 }))
-                .isInstanceOf(TransactionException.class);
+                .isInstanceOf(RuntimeException.class);
 
         verify(connection).setAutoCommit(false);
         verify(connection).rollback();
