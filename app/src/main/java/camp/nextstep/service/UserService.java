@@ -44,14 +44,20 @@ public class UserService {
     }
 
     public void changePassword(final long id, final String newPassword, final String createBy) {
+        startTx(() -> {
+            final var user = findById(id);
+            user.changePassword(newPassword);
+            userDao.update(user);
+            userHistoryDao.log(new UserHistory(user, createBy));
+        });
+    }
+
+    private void startTx(final Runnable runnable) {
         try (final Connection connection = ConnectionManager.getConnection(dataSource)) {
             try {
                 connection.setAutoCommit(false);
 
-                final var user = findById(id);
-                user.changePassword(newPassword);
-                userDao.update(user);
-                userHistoryDao.log(new UserHistory(user, createBy));
+                runnable.run();
 
                 connection.commit();
             } catch (RuntimeException e) {
@@ -61,6 +67,6 @@ public class UserService {
             }
         } catch (SQLException e) {
             throw new JdbcException("Error in get connection.", e);
-        };
+        }
     }
 }
