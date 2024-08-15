@@ -116,14 +116,11 @@ public class JdbcTemplate {
             return;
         }
 
-        closeConnection(connection);
-    }
-
-    private void closeConnection(final Connection connection) {
         try {
             connection.close();
         } catch (final SQLException e) {
             throw new DataAccessException(e);
         }
     }
+
 }
