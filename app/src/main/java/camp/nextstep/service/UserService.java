@@ -8,8 +8,6 @@ import camp.nextstep.transaction.support.TransactionTemplate;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
 
-import javax.sql.DataSource;
-
 @Service
 public class UserService {
 
@@ -18,10 +16,10 @@ public class UserService {
     private final TransactionTemplate transactionTemplate;
 
     @Autowired
-    public UserService(final UserDao userDao, final UserHistoryDao userHistoryDao, final DataSource dataSource) {
+    public UserService(final UserDao userDao, final UserHistoryDao userHistoryDao, final TransactionTemplate transactionTemplate) {
         this.userDao = userDao;
         this.userHistoryDao = userHistoryDao;
-        this.transactionTemplate = new TransactionTemplate(dataSource);
+        this.transactionTemplate = transactionTemplate;
     }
 
     public User findByAccount(final String account) {
