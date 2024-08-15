@@ -2,13 +2,13 @@ package camp.nextstep.dao;
 
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.support.jdbc.BeanPropertyRowMapper;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 public class UserDao {
 
     private static final Logger log = LoggerFactory.getLogger(UserDao.class);
+    private static final BeanPropertyRowMapper<User> USER_ROW_MAPPER = new BeanPropertyRowMapper<>(User.class);
 
     private final DataSource dataSource;
 
@@ -82,15 +83,7 @@ public class UserDao {
 
             log.debug("query : {}", sql);
 
-            List<User> users = new ArrayList<>();
-            while (rs.next()) {
-                users.add(new User(
-                    rs.getLong(1),
-                    rs.getString(2),
-                    rs.getString(3),
-                    rs.getString(4)));
-            }
-            return users;
+            return USER_ROW_MAPPER.mapRows(rs);
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -108,14 +101,10 @@ public class UserDao {
             try (ResultSet rs = pstmt.executeQuery()) {
                 log.debug("query : {}", sql);
 
-                if (rs.next()) {
-                    return new User(
-                        rs.getLong(1),
-                        rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4));
+                if (!rs.next()) {
+                    return null;
                 }
-                return null;
+                return USER_ROW_MAPPER.mapRow(rs);
             }
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
@@ -126,21 +115,17 @@ public class UserDao {
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
 
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            preparedStatement.setString(1, account);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            pstmt.setString(1, account);
+            try (ResultSet rs = pstmt.executeQuery()) {
                 log.debug("query : {}", sql);
 
-                if (resultSet.next()) {
-                    return new User(
-                        resultSet.getLong(1),
-                        resultSet.getString(2),
-                        resultSet.getString(3),
-                        resultSet.getString(4));
+                if (!rs.next()) {
+                    return null;
                 }
-                return null;
+                return USER_ROW_MAPPER.mapRow(rs);
             }
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
