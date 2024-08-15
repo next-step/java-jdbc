@@ -4,7 +4,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class ConnectionManager {
+public class DataSourceUtils {
     private static final ThreadLocal<Connection> CONNECTION_HOLDER = new ThreadLocal<>();
 
     public static Connection getConnection(final DataSource dataSource) throws SQLException {
