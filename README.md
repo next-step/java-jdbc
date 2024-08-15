@@ -77,3 +77,11 @@
 - 정상적으로 종료되면 `Connection.commit()` 으로 커밋한다.
 - 예외가 발생하면 `Connection.rollback()` 으로 롤백 한 뒤 예외를 던진다.
 - userDao 와 userHistoryDao 가 하나의 Connection 객체를 사용하도록 한다.
+
+- TransactionSynchronizationManager
+  - 실행 중인 Thread 의 DataSource 별 Connection 을 관리하는 객체
+- TransactionTemplate
+  - TransactionSynchronizationManager 를 이용해서 connection 을 사용하는 객체
+  - 정상 처리시 commit 을 한다.
+  - 예외 발생 시 rollback 을 한다.
+  - 종료 시 connection 을 닫고 TransactionSynchronizationManager 에 connection 을 제거한다.
