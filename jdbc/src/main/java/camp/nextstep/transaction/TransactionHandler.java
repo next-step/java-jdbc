@@ -17,7 +17,9 @@ public class TransactionHandler {
             txCallback.execute();
 
             connection.commit();
-        } catch (SQLException | DataAccessException e) {
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (DataAccessException e) {
             try {
                 if (connection != null) {
                     connection.rollback();
@@ -32,7 +34,8 @@ public class TransactionHandler {
                 if (connection != null) {
                     connection.close();
                 }
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
         }
     }
 }
