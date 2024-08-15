@@ -1,6 +1,7 @@
 package camp.nextstep.transaction;
 
 import camp.nextstep.dao.DataAccessException;
+import camp.nextstep.jdbc.CannotCloseJdbcConnectionException;
 import camp.nextstep.jdbc.datasource.ConnectionUtils;
 import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 import java.sql.Connection;
@@ -29,12 +30,17 @@ public class TransactionHandler {
                 throw new RuntimeException(ex);
             }
         } finally {
+            TransactionSynchronizationManager.unbindResource(dataSource);
+            closeConnection(connection);
+        }
+    }
+
+    private void closeConnection(Connection connection) {
+        if (connection != null) {
             try {
-                TransactionSynchronizationManager.unbindResource(dataSource);
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException ignored) {
+                connection.close();
+            } catch (SQLException e) {
+                throw new CannotCloseJdbcConnectionException("Connection close 실패");
             }
         }
     }
