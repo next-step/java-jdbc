@@ -47,15 +47,17 @@ public class JdbcTemplate {
     public <T> List<T> query(final String sql, final Object[] parameters, final RowMapper<T> rowMapper) {
         checkParameterNum(sql, parameters);
 
-        return template(connection -> {
-            try (final PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                setParams(parameters, pstmt);
+        return template(connection -> queryInternal(sql, parameters, rowMapper, connection));
+    }
 
-                try (final ResultSet resultSet = pstmt.executeQuery()) {
-                    return mappingResult(rowMapper, resultSet);
-                }
+    private <T> List<T> queryInternal(final String sql, final Object[] parameters, final RowMapper<T> rowMapper, final Connection connection) throws SQLException {
+        try (final PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            setParams(parameters, pstmt);
+
+            try (final ResultSet resultSet = pstmt.executeQuery()) {
+                return mappingResult(rowMapper, resultSet);
             }
-        });
+        }
     }
 
     private void checkParameterNum(final String sql, final Object[] parameters) {
