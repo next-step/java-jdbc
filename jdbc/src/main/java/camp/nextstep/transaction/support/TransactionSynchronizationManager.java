@@ -11,7 +11,8 @@ public abstract class TransactionSynchronizationManager {
 
     private static final ThreadLocal<Map<DataSource, Connection>> resources = new ThreadLocal<>();
 
-    private TransactionSynchronizationManager() {}
+    private TransactionSynchronizationManager() {
+    }
 
     public static Connection getResource(DataSource key) {
         final Map<DataSource, Connection> dataSourceConnectionMap = getOrCreateResourceMap();
@@ -24,7 +25,7 @@ public abstract class TransactionSynchronizationManager {
 
         if (oldConnection != null) {
             throw new JdbcException(
-         					"Already connection [" + oldConnection + "] for key [" + key + "] bound to dataSourceConnectionMap");
+                    "Already connection [" + oldConnection + "] for key [" + key + "] bound to dataSourceConnectionMap");
         }
     }
 
