@@ -1,5 +1,6 @@
 package camp.nextstep.jdbc.core;
 
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +88,7 @@ public class JdbcTemplate {
 
     private <T> T template(final ConnectionCallback<T> consumer) {
         try {
-            final Connection connection = ConnectionManager.getConnection(dataSource);
+            final Connection connection = DataSourceUtils.getConnection(dataSource);
             return doAccept(consumer, connection);
         } catch (SQLException e) {
             throw new JdbcException("connection consume error - " + e.getMessage(), e);
@@ -99,7 +100,7 @@ public class JdbcTemplate {
             return consumer.accept(connection);
         } finally {
             if (connection.getAutoCommit()) {
-                connection.close();
+                DataSourceUtils.releaseConnection(dataSource);
             }
         }
     }
