@@ -2,6 +2,7 @@ package camp.nextstep.jdbc.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -62,6 +63,17 @@ class JdbcTemplateTest {
         String actual = jdbcTemplate.selectOne(SELECT_BY_ID_QUERY, EMAIL_RESULT_SET_HANDLER, id).get();
 
         assertThat(actual).isEqualTo(expected);
+    }
+
+    @DisplayName("query의 매개변수 개수와 넘겨받은 인자의 개수가 서로 다를 경우 예외를 발생시킨다.")
+    @Test
+    void queryParamsCounts() {
+        assertAll(
+                () -> assertThatThrownBy(() -> jdbcTemplate.update(INSERT_QUERY))
+                        .isInstanceOf(IllegalArgumentException.class),
+                () -> assertThatThrownBy(() -> jdbcTemplate.update(INSERT_QUERY, "mail", "mail2"))
+                        .isInstanceOf(IllegalArgumentException.class)
+        );
     }
 
     @DisplayName("데이터를 1개 가져온다.")
