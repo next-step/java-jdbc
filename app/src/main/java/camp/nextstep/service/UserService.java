@@ -4,8 +4,8 @@ import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
-import camp.nextstep.jdbc.core.ConnectionManager;
 import camp.nextstep.jdbc.core.JdbcException;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
 import org.slf4j.Logger;
@@ -53,20 +53,20 @@ public class UserService {
     }
 
     private void startTx(final Runnable runnable) {
-        try (final Connection connection = ConnectionManager.getConnection(dataSource)) {
+        final Connection connection = DataSourceUtils.getConnection(dataSource);
+        try {
             try {
                 connection.setAutoCommit(false);
-
                 runnable.run();
-
                 connection.commit();
             } catch (RuntimeException e) {
-                log.error("rollback", e);
                 connection.rollback();
                 throw e;
             }
         } catch (SQLException e) {
             throw new JdbcException("Error in get connection.", e);
+        } finally {
+            DataSourceUtils.releaseConnection(dataSource);
         }
     }
 }
