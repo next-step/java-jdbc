@@ -43,7 +43,7 @@ public class DataSourceTransactionManager implements TransactionManager {
         try {
             Connection connection = DataSourceUtils.getConnection(dataSource);
             connection.setAutoCommit(true);
-            DataSourceUtils.releaseConnection(connection, dataSource);
+            DataSourceUtils.releaseConnection(dataSource);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
