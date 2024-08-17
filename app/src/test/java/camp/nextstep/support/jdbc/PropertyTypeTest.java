@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import camp.nextstep.jdbc.core.PropertyType;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import org.junit.jupiter.api.BeforeEach;

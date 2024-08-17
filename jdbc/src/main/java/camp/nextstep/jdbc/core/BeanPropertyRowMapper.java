@@ -1,12 +1,10 @@
-package camp.nextstep.support.jdbc;
+package camp.nextstep.jdbc.core;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-public class BeanPropertyRowMapper<T> {
+public class BeanPropertyRowMapper<T> implements RowMapper<T> {
 
     private final Class<T> mappedClass;
 
@@ -14,6 +12,7 @@ public class BeanPropertyRowMapper<T> {
         this.mappedClass = mappedClass;
     }
 
+    @Override
     public T mapRow(ResultSet rs) throws SQLException {
         try {
             T instance = mappedClass.getDeclaredConstructor().newInstance();
@@ -32,13 +31,5 @@ public class BeanPropertyRowMapper<T> {
         } catch (Exception e) {
             throw new SQLException("Error mapping row", e);
         }
-    }
-
-    public List<T> mapRows(ResultSet rs) throws SQLException {
-        List<T> results = new ArrayList<>();
-        while (rs.next()) {
-            results.add(mapRow(rs));
-        }
-        return results;
     }
 }

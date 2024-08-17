@@ -1,4 +1,4 @@
-package camp.nextstep.support.jdbc;
+package camp.nextstep.jdbc.core;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
