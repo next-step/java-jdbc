@@ -37,7 +37,7 @@ class TransactionSynchronizationManagerTest {
 
     @Test
     @DisplayName("다른 DataSource 에 대해서는 다른 Connection 객체를 반환한다.")
-    void getResourceWithDiffThreadTest() throws SQLException {
+    void getResourceWithDiffConnectionTest() throws SQLException {
         final DataSource anotherDataSource = mock(DataSource.class);
         final Connection anotherConnection = mock(Connection.class);
         when(dataSource.getConnection()).thenReturn(connection);
@@ -49,6 +49,26 @@ class TransactionSynchronizationManagerTest {
         final Connection secondConnection = TransactionSynchronizationManager.getResource(anotherDataSource);
 
         assertThat(firstConnection).isNotSameAs(secondConnection);
+    }
+
+
+    @Test
+    @DisplayName("다른 스레드에서 같은 DataSource 에 대해 다른 Connection 객체를 반환한다.")
+    void getResourceWithDiffThreadTest() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        TransactionSynchronizationManager.bindResource(dataSource, connection);
+
+        final Connection firstConnection = TransactionSynchronizationManager.getResource(dataSource);
+
+        new Thread(RunnableWrapper.accept(() -> {
+            final Connection anotherConnection = mock(Connection.class);
+            when(dataSource.getConnection()).thenReturn(anotherConnection);
+            TransactionSynchronizationManager.bindResource(dataSource, anotherConnection);
+
+            final Connection secondConnection = TransactionSynchronizationManager.getResource(dataSource);
+
+            assertThat(firstConnection).isNotSameAs(secondConnection);
+        })).start();
     }
 
     @Test
@@ -82,5 +102,6 @@ class TransactionSynchronizationManagerTest {
             softly.assertThat(TransactionSynchronizationManager.getResource(dataSource)).isNull();
         });
     }
+
 
 }
