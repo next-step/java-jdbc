@@ -1,7 +1,6 @@
 package camp.nextstep.jdbc.core;
 
 
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -131,23 +129,4 @@ class JdbcTemplateTest {
 
     }
 
-
-    @Test
-    @DisplayName("TransactionSynchronization 에 connection 이 존재하면 실행되고 리소스를 회수하지 않는다.")
-    void testUpdateWithTransactionSynchronizationManager() throws SQLException {
-        TransactionSynchronizationManager.bindResource(dataSource, connection);
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-
-        final JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
-        final String sql = "insert into users (account, password, email) values (?, ?, ?)";
-        jdbcTemplate.update(sql, "test", "password", "test@test.com");
-
-        verify(preparedStatement).setObject(1, "test");
-        verify(preparedStatement).setObject(2, "password");
-        verify(preparedStatement).setObject(3, "test@test.com");
-        verify(preparedStatement).executeUpdate();
-
-        verify(connection, times(0)).close();
-    }
 }

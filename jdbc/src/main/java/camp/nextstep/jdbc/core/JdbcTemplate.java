@@ -28,7 +28,7 @@ public class JdbcTemplate {
     }
 
     public void update(final String sql, final PreparedStatementSetter preparedStatementSetter) {
-        final Connection conn = getConnection();
+        final Connection conn = TransactionSynchronizationManager.getConnection(dataSource);
         try (final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
             log.info("query : {}", sql);
@@ -40,7 +40,7 @@ public class JdbcTemplate {
             log.error(e.getMessage(), e);
             throw new DataAccessException(e);
         } finally {
-            tryToCloseConnection(conn);
+            TransactionSynchronizationManager.tryToCloseConnection(conn, dataSource);
         }
     }
 
@@ -50,7 +50,7 @@ public class JdbcTemplate {
 
     public <T> List<T> query(final String sql, final RowMapper<T> rowMapper, final PreparedStatementSetter preparedStatementSetter) {
         ResultSet resultSet = null;
-        final Connection conn = getConnection();
+        final Connection conn = TransactionSynchronizationManager.getConnection(dataSource);
         try (final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
             preparedStatementSetter.setValues(preparedStatement);
@@ -68,7 +68,7 @@ public class JdbcTemplate {
             log.error(e.getMessage(), e);
             throw new DataAccessException(e);
         } finally {
-            tryToCloseConnection(conn);
+            TransactionSynchronizationManager.tryToCloseConnection(conn, dataSource);
             closeResultSet(resultSet);
         }
     }
@@ -93,34 +93,6 @@ public class JdbcTemplate {
             return null;
         }
         return result.get(0);
-    }
-
-    private Connection getConnection() {
-        final Connection connection = TransactionSynchronizationManager.getResource(dataSource);
-
-        if (connection != null) {
-            return connection;
-        }
-
-        try {
-            return dataSource.getConnection();
-        } catch (final SQLException e) {
-            throw new DataAccessException(e);
-        }
-
-    }
-
-    private void tryToCloseConnection(final Connection connection) {
-        final Connection currnetContextConnection = TransactionSynchronizationManager.getResource(dataSource);
-        if (currnetContextConnection != null) {
-            return;
-        }
-
-        try {
-            connection.close();
-        } catch (final SQLException e) {
-            throw new DataAccessException(e);
-        }
     }
 
 }
