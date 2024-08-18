@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,14 +29,23 @@ class TransactionTemplateTest {
     @Test
     @DisplayName("메서드가 정상적으로 실행 되고 트랜잭션이 commit 된다.")
     void runWithoutReturnTest() throws SQLException {
-        final AtomicInteger target = new AtomicInteger(0);
+        final RunnableClass runnableClass = new RunnableClass();
 
-        transactionTemplate.run(target::incrementAndGet);
+        transactionTemplate.run(runnableClass);
 
-        assertThat(target.get()).isEqualTo(1);
+        assertThat(runnableClass.counter).isEqualTo(1);
         verify(connection).setAutoCommit(false);
         verify(connection).commit();
         verify(connection).close();
+    }
+
+    private static class RunnableClass implements Runnable {
+        private int counter;
+
+        @Override
+        public void run() {
+            counter++;
+        }
     }
 
     @Test
