@@ -1,13 +1,12 @@
 package connectionpool.stage1;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import java.sql.SQLException;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.junit.jupiter.api.Test;
-
-import java.sql.SQLException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class Stage1Test {
 
@@ -60,6 +59,7 @@ class Stage1Test {
      */
     @Test
     void testHikariCP() {
+        // 전파 레벨 requires_new 조심해야한다 (데드락 주의)
         final var hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(H2_URL);
         hikariConfig.setUsername(USER);

@@ -6,8 +6,12 @@ import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ConnectionUtils {
+    private static final Logger log = LoggerFactory.getLogger(ConnectionUtils.class);
+
     private ConnectionUtils() {
     }
 
@@ -28,7 +32,10 @@ public abstract class ConnectionUtils {
     public static void closeConnection(Connection connection, DataSource dataSource) {
         if (connection != null && !TransactionSynchronizationManager.isTransactionActive(dataSource)) {
             close(connection);
+            return;
         }
+
+        log.debug("상위 트랜잭션에 참여 중인 Connection은 닫을 수 없습니다.");
     }
 
     private static void close(Connection connection) {
