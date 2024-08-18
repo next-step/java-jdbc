@@ -1,6 +1,6 @@
 package camp.nextstep.controller;
 
-import camp.nextstep.service.UserService;
+import camp.nextstep.service.TxUserService;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Controller;
 import com.interface21.web.bind.annotation.PathVariable;
@@ -17,10 +17,10 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    private final UserService userService;
+    private final TxUserService userService;
 
     @Autowired
-    public UserController(final UserService userService) {
+    public UserController(final TxUserService userService) {
         this.userService = userService;
     }
 

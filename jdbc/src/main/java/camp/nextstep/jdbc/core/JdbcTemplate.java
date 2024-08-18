@@ -1,7 +1,7 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
-import camp.nextstep.jdbc.datasource.ConnectionUtils;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,7 +26,7 @@ public class JdbcTemplate {
     public void update(String query, PreparedStatementSetter preparedStatementSetter) {
         Connection connection = null;
         try {
-            connection = ConnectionUtils.getConnection(dataSource);
+            connection = DataSourceUtils.getConnection(dataSource);
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 preparedStatementSetter.setValues(pstmt);
                 pstmt.executeUpdate();
@@ -34,7 +34,7 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {
-            ConnectionUtils.closeConnection(connection, dataSource);
+            DataSourceUtils.closeConnection(connection, dataSource);
         }
     }
 
@@ -46,7 +46,7 @@ public class JdbcTemplate {
     public <T> Optional<T> selectOne(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         Connection connection = null;
         try {
-            connection = ConnectionUtils.getConnection(dataSource);
+            connection = DataSourceUtils.getConnection(dataSource);
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 preparedStatementSetter.setValues(pstmt);
                 return findOneResult(resultSetHandler, pstmt);
@@ -54,7 +54,7 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {
-            ConnectionUtils.closeConnection(connection, dataSource);
+            DataSourceUtils.closeConnection(connection, dataSource);
         }
     }
 
@@ -86,7 +86,7 @@ public class JdbcTemplate {
     public <T> List<T> selectAll(String query, PreparedStatementSetter preparedStatementSetter, ResultSetHandler<T> resultSetHandler) {
         Connection connection = null;
         try {
-            connection = ConnectionUtils.getConnection(dataSource);
+            connection = DataSourceUtils.getConnection(dataSource);
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 preparedStatementSetter.setValues(pstmt);
                 return getMultipleResults(resultSetHandler, pstmt);
@@ -94,7 +94,7 @@ public class JdbcTemplate {
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {
-            ConnectionUtils.closeConnection(connection, dataSource);
+            DataSourceUtils.closeConnection(connection, dataSource);
         }
     }
 
