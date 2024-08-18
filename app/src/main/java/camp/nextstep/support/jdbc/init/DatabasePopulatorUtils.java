@@ -14,60 +14,30 @@ import java.sql.Statement;
 public class DatabasePopulatorUtils {
 
     private static final Logger log = LoggerFactory.getLogger(DatabasePopulatorUtils.class);
+    private static final String SCHEMA_SQL = "schema.sql";
+    private static final String CLEANUP_SQL = "cleanup.sql";
 
     public static void execute(final DataSource dataSource) {
-        Connection connection = null;
-        Statement statement = null;
-        try {
-            final var url = DatabasePopulatorUtils.class.getClassLoader().getResource("schema.sql");
-            final var file = new File(url.getFile());
-            final var sql = Files.readString(file.toPath());
-            connection = dataSource.getConnection();
-            statement = connection.createStatement();
-            statement.execute(sql);
-        } catch (NullPointerException | IOException | SQLException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException ignored) {}
-
-            try {
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException ignored) {}
-        }
+        executeBySQLFilePath(dataSource, SCHEMA_SQL);
     }
 
     public static void cleanup(final DataSource dataSource) {
-        Connection connection = null;
-        Statement statement = null;
+        executeBySQLFilePath(dataSource, CLEANUP_SQL);
+    }
+
+    private static void executeBySQLFilePath(final DataSource dataSource, final String schemaSql) {
         try {
-            final var url = DatabasePopulatorUtils.class.getClassLoader().getResource("cleanup.sql");
+            final var url = DatabasePopulatorUtils.class.getClassLoader().getResource(schemaSql);
             final var file = new File(url.getFile());
             final var sql = Files.readString(file.toPath());
-            connection = dataSource.getConnection();
-            statement = connection.createStatement();
+            final Connection connection = dataSource.getConnection();
+            final Statement statement = connection.createStatement();
             statement.execute(sql);
-        } catch (NullPointerException | IOException | SQLException e) {
+        } catch (final NullPointerException | IOException | SQLException e) {
             log.error(e.getMessage(), e);
-        } finally {
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException ignored) {}
-
-            try {
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException ignored) {}
         }
     }
 
-    private DatabasePopulatorUtils() {}
+    private DatabasePopulatorUtils() {
+    }
 }
