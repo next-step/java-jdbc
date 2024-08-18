@@ -4,7 +4,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class TransactionSynchronizationManager {
 
@@ -20,7 +19,13 @@ public abstract class TransactionSynchronizationManager {
     }
 
     public static void bindResource(final DataSource key, final Connection value) {
-        resources.get().putIfAbsent(key, value);
+        final Map<DataSource, Connection> dataSourceConnectionMap = resources.get();
+
+        if (dataSourceConnectionMap.containsKey(key)) {
+            throw new IllegalStateException("Resource is already bound to key " + key);
+        }
+
+        dataSourceConnectionMap.put(key, value);
     }
 
     public static Connection unbindResource(final DataSource key) {

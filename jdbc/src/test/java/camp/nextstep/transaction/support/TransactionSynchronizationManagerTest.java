@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,6 +59,15 @@ class TransactionSynchronizationManagerTest {
         final Connection boundConnection = TransactionSynchronizationManager.getResource(dataSource);
 
         assertThat(boundConnection).isSameAs(connection);
+    }
+
+    @Test
+    @DisplayName("이미 Connection 이 바인딩 되어 있는데 bind 시도 시 예외를 던진다.")
+    void alreadyBindResourceTest() {
+        TransactionSynchronizationManager.bindResource(dataSource, connection);
+
+        assertThatThrownBy(() -> TransactionSynchronizationManager.bindResource(dataSource, connection))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
