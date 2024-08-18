@@ -128,4 +128,5 @@ class JdbcTemplateTest {
     private record User(Long id, String account, String password, String email) {
 
     }
+
 }
