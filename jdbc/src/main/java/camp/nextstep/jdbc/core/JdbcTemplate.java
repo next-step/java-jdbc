@@ -1,6 +1,6 @@
 package camp.nextstep.jdbc.core;
 
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ public class JdbcTemplate {
     }
 
     public void update(final String sql, final PreparedStatementSetter preparedStatementSetter) {
-        final Connection conn = TransactionSynchronizationManager.getConnection(dataSource);
+        final Connection conn = DataSourceUtils.getConnection(dataSource);
         try (final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
             log.info("query : {}", sql);
@@ -40,7 +40,7 @@ public class JdbcTemplate {
             log.error(e.getMessage(), e);
             throw new DataAccessException(e);
         } finally {
-            TransactionSynchronizationManager.tryToCloseConnection(conn, dataSource);
+            DataSourceUtils.releaseConnection(conn, dataSource);
         }
     }
 
@@ -50,7 +50,7 @@ public class JdbcTemplate {
 
     public <T> List<T> query(final String sql, final RowMapper<T> rowMapper, final PreparedStatementSetter preparedStatementSetter) {
         ResultSet resultSet = null;
-        final Connection conn = TransactionSynchronizationManager.getConnection(dataSource);
+        final Connection conn = DataSourceUtils.getConnection(dataSource);
         try (final PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
             preparedStatementSetter.setValues(preparedStatement);
@@ -68,7 +68,7 @@ public class JdbcTemplate {
             log.error(e.getMessage(), e);
             throw new DataAccessException(e);
         } finally {
-            TransactionSynchronizationManager.tryToCloseConnection(conn, dataSource);
+            DataSourceUtils.releaseConnection(conn, dataSource);
             closeResultSet(resultSet);
         }
     }
