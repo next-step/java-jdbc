@@ -79,8 +79,8 @@ class TransactionTemplateTest {
         TransactionSynchronizationManager.bindResource(dataSource, connection);
 
         transactionTemplate.run(() -> {
-            final Connection resource = TransactionSynchronizationManager.getResource(dataSource);
-            assertThat(resource).isSameAs(connection);
+            final ConnectionHolder resource = TransactionSynchronizationManager.getResource(dataSource);
+            assertThat(resource.getConnection()).isSameAs(connection);
         });
 
         verify(connection).commit();
@@ -93,14 +93,14 @@ class TransactionTemplateTest {
         TransactionSynchronizationManager.bindResource(dataSource, connection);
 
         transactionTemplate.run(() -> {
-            final Connection resource = TransactionSynchronizationManager.getResource(dataSource);
+            final ConnectionHolder resource = TransactionSynchronizationManager.getResource(dataSource);
             assertThat(resource).isNotNull();
         });
 
         verify(connection).commit();
         verify(connection).close();
 
-        final Connection resource = TransactionSynchronizationManager.getResource(dataSource);
+        final ConnectionHolder resource = TransactionSynchronizationManager.getResource(dataSource);
         assertThat(resource).isNull();
     }
 

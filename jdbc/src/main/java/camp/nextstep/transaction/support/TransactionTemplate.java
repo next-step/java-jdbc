@@ -51,10 +51,10 @@ public class TransactionTemplate {
     }
 
     private Connection getConnection() throws SQLException {
-        final Connection connection = TransactionSynchronizationManager.getResource(dataSource);
+        final ConnectionHolder connectionHolder = TransactionSynchronizationManager.getResource(dataSource);
 
-        if (connection != null) {
-            return connection;
+        if (connectionHolder != null) {
+            return connectionHolder.getConnection();
         }
 
         final Connection newConnection = dataSource.getConnection();
