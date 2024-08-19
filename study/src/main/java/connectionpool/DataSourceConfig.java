@@ -18,7 +18,7 @@ public class DataSourceConfig {
     @Bean
     public DataSource hikariDataSource() {
         final var hikariConfig = new HikariConfig();
-        hikariConfig.setPoolName("gugu");
+        hikariConfig.setPoolName("new gugu pool");
         hikariConfig.setJdbcUrl(H2_URL);
         hikariConfig.setUsername(USER);
         hikariConfig.setPassword(PASSWORD);
