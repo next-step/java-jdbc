@@ -4,7 +4,6 @@ import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
-import camp.nextstep.transaction.support.TransactionTemplate;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
 
@@ -13,13 +12,11 @@ public class AppUserService implements UserService {
 
     private final UserDao userDao;
     private final UserHistoryDao userHistoryDao;
-    private final TransactionTemplate transactionTemplate;
 
     @Autowired
-    public AppUserService(final UserDao userDao, final UserHistoryDao userHistoryDao, final TransactionTemplate transactionTemplate) {
+    public AppUserService(final UserDao userDao, final UserHistoryDao userHistoryDao) {
         this.userDao = userDao;
         this.userHistoryDao = userHistoryDao;
-        this.transactionTemplate = transactionTemplate;
     }
 
     @Override
@@ -39,12 +36,10 @@ public class AppUserService implements UserService {
 
     @Override
     public void changePassword(final long id, final String newPassword, final String createBy) {
-        transactionTemplate.run(() -> {
-            final var user = findById(id);
-            user.changePassword(newPassword);
-            userDao.update(user);
-            userHistoryDao.log(new UserHistory(user, createBy));
-        });
+        final var user = findById(id);
+        user.changePassword(newPassword);
+        userDao.update(user);
+        userHistoryDao.log(new UserHistory(user, createBy));
     }
 
 }
