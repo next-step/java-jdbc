@@ -16,6 +16,3 @@ create table if not exists user_history (
     created_by varchar(100) not null,
     primary key(id)
 );
-
-insert into users (account, password, email)
-values ('gugu', 'password', 'hkkang@woowahan.com');
