@@ -1,20 +1,19 @@
 package connectionpool.stage2;
 
+import static com.zaxxer.hikari.util.UtilityElf.quietlySleep;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
 import connectionpool.DataSourceConfig;
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.sql.DataSource;
-import java.lang.reflect.Field;
-import java.sql.Connection;
-
-import static com.zaxxer.hikari.util.UtilityElf.quietlySleep;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class Stage2Test {
@@ -36,7 +35,7 @@ class Stage2Test {
         final var hikariPool = getPool((HikariDataSource) dataSource);
 
         // 설정한 커넥션 풀 최대값보다 더 많은 스레드를 생성해서 동시에 디비에 접근을 시도하면 어떻게 될까?
-        final var threads = new Thread[20];
+        final var threads = new Thread[40];
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(getConnection());
         }

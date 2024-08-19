@@ -24,6 +24,10 @@ public class DatabasePopulatorUtils {
             final var sql = Files.readString(file.toPath());
             connection = dataSource.getConnection();
             statement = connection.createStatement();
+//            String[] split = sql.split(";");
+//            statement.addBatch(split[0]);
+//            statement.addBatch(split[1]);
+//            statement.executeBatch();
             statement.execute(sql);
         } catch (NullPointerException | IOException | SQLException e) {
             log.error(e.getMessage(), e.getCause());

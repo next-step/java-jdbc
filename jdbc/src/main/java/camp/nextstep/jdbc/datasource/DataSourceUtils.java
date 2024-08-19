@@ -1,37 +1,49 @@
 package camp.nextstep.jdbc.datasource;
 
+import camp.nextstep.jdbc.CannotCloseJdbcConnectionException;
 import camp.nextstep.jdbc.CannotGetJdbcConnectionException;
 import camp.nextstep.transaction.support.TransactionSynchronizationManager;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// 4단계 미션에서 사용할 것
 public abstract class DataSourceUtils {
+    private static final Logger log = LoggerFactory.getLogger(DataSourceUtils.class);
 
-    private DataSourceUtils() {}
+    private DataSourceUtils() {
+    }
 
-    public static Connection getConnection(DataSource dataSource) throws CannotGetJdbcConnectionException {
-        Connection connection = TransactionSynchronizationManager.getResource(dataSource);
-        if (connection != null) {
-            return connection;
+    public static Connection getConnection(DataSource dataSource) {
+        if (TransactionSynchronizationManager.isTransactionActive(dataSource)) {
+            return TransactionSynchronizationManager.getResource(dataSource);
         }
 
         try {
-            connection = dataSource.getConnection();
+            Connection connection = dataSource.getConnection();
             TransactionSynchronizationManager.bindResource(dataSource, connection);
             return connection;
-        } catch (SQLException ex) {
-            throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", ex);
+        } catch (SQLException e) {
+            throw new CannotGetJdbcConnectionException("JDBC 커넥션 획득 실패");
         }
     }
 
-    public static void releaseConnection(Connection connection, DataSource dataSource) {
+    public static void closeConnection(Connection connection, DataSource dataSource) {
+        if (connection != null && !TransactionSynchronizationManager.isTransactionActive(dataSource)) {
+            close(connection);
+            return;
+        }
+
+        log.debug("상위 트랜잭션에 참여 중인 Connection은 닫을 수 없습니다.");
+    }
+
+    private static void close(Connection connection) {
         try {
             connection.close();
-        } catch (SQLException ex) {
-            throw new CannotGetJdbcConnectionException("Failed to close JDBC Connection");
+        } catch (SQLException e) {
+            throw new CannotCloseJdbcConnectionException("JDBC Connection Release 실패");
         }
     }
+
 }
