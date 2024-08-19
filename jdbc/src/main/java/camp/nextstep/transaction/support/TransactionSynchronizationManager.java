@@ -1,10 +1,7 @@
 package camp.nextstep.transaction.support;
 
-import camp.nextstep.jdbc.core.DataAccessException;
-
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,33 +30,5 @@ public abstract class TransactionSynchronizationManager {
 
     public static Connection unbindResource(final DataSource key) {
         return resources.get().remove(key);
-    }
-
-    public static Connection getConnection(final DataSource dataSource) {
-        final Connection connection = TransactionSynchronizationManager.getResource(dataSource);
-
-        if (connection != null) {
-            return connection;
-        }
-
-        try {
-            return dataSource.getConnection();
-        } catch (final SQLException e) {
-            throw new DataAccessException(e);
-        }
-
-    }
-
-    public static void tryToCloseConnection(final Connection connection, final DataSource dataSource) {
-        final Connection currnetContextConnection = TransactionSynchronizationManager.getResource(dataSource);
-        if (currnetContextConnection != null) {
-            return;
-        }
-
-        try {
-            connection.close();
-        } catch (final SQLException e) {
-            throw new DataAccessException(e);
-        }
     }
 }

@@ -106,45 +106,4 @@ class TransactionSynchronizationManagerTest {
         });
     }
 
-    @Test
-    @DisplayName("getConnection 이 새로운 Connection 을 생성하고 반환한다.")
-    void getConnectionCreatesNewConnectionTest() throws SQLException {
-        when(dataSource.getConnection()).thenReturn(connection);
-
-        TransactionSynchronizationManager.getConnection(dataSource);
-
-        verify(dataSource, times(1)).getConnection();
-    }
-
-    @Test
-    @DisplayName("getConnection 이 이미 바인딩된 Connection 을 반환한다.")
-    void getConnectionReturnsBoundConnectionTest() throws SQLException {
-        TransactionSynchronizationManager.bindResource(dataSource, connection);
-
-        final Connection retrievedConnection = TransactionSynchronizationManager.getConnection(dataSource);
-
-        assertThat(retrievedConnection).isSameAs(connection);
-        verify(dataSource, never()).getConnection();
-    }
-
-    @Test
-    @DisplayName("tryToCloseConnection 이 바인딩되지 않은 Connection 을 닫는다.")
-    void tryToCloseConnectionClosesUnboundConnectionTest() throws SQLException {
-        when(dataSource.getConnection()).thenReturn(connection);
-        final Connection newConnection = TransactionSynchronizationManager.getConnection(dataSource);
-
-        TransactionSynchronizationManager.tryToCloseConnection(newConnection, dataSource);
-
-        verify(newConnection, times(1)).close();
-    }
-
-    @Test
-    @DisplayName("tryToCloseConnection 이 바인딩된 Connection 은 닫지 않는다.")
-    void tryToCloseConnectionDoesNotCloseBoundConnectionTest() throws SQLException {
-        TransactionSynchronizationManager.bindResource(dataSource, connection);
-
-        TransactionSynchronizationManager.tryToCloseConnection(connection, dataSource);
-
-        verify(connection, never()).close();
-    }
 }
