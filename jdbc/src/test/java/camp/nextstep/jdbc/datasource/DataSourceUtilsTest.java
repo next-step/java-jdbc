@@ -1,6 +1,6 @@
 package camp.nextstep.jdbc.datasource;
 
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +19,11 @@ class DataSourceUtilsTest {
     private final DataSource dataSource = mock(DataSource.class);
     private final Connection connection = mock(Connection.class);
 
+    @AfterEach
+    void tearDown() {
+        DataSourceUtils.releaseConnection(connection, dataSource);
+    }
+
     @Test
     @DisplayName("getConnection 이 새로운 Connection 을 생성하고 반환한다.")
     void getConnectionCreatesNewConnectionTest() throws SQLException {
@@ -30,34 +35,59 @@ class DataSourceUtilsTest {
     }
 
     @Test
-    @DisplayName("getConnection 이 이미 바인딩된 Connection 을 반환한다.")
+    @DisplayName("release 되지 않았다면 getConnection 이 같은 Connection 을 반환한다.")
     void getConnectionReturnsBoundConnectionTest() throws SQLException {
-        TransactionSynchronizationManager.bindResource(dataSource, connection);
-
-        final Connection retrievedConnection = DataSourceUtils.getConnection(dataSource);
-
-        assertThat(retrievedConnection).isSameAs(connection);
-        verify(dataSource, never()).getConnection();
-    }
-
-    @Test
-    @DisplayName("tryToCloseConnection 이 바인딩되지 않은 Connection 을 닫는다.")
-    void tryToCloseConnectionClosesUnboundConnectionTest() throws SQLException {
         when(dataSource.getConnection()).thenReturn(connection);
-        final Connection newConnection = DataSourceUtils.getConnection(dataSource);
 
-        DataSourceUtils.releaseConnection(newConnection, dataSource);
+        final Connection firstConnection = DataSourceUtils.getConnection(dataSource);
+        final Connection secondConnection = DataSourceUtils.getConnection(dataSource);
 
-        verify(newConnection, times(1)).close();
+        assertThat(secondConnection).isSameAs(firstConnection);
     }
 
     @Test
-    @DisplayName("tryToCloseConnection 이 바인딩된 Connection 은 닫지 않는다.")
-    void tryToCloseConnectionDoesNotCloseBoundConnectionTest() throws SQLException {
-        TransactionSynchronizationManager.bindResource(dataSource, connection);
+    @DisplayName("releaseConnection 이 바인딩되지 않은 Connection 을 닫는다.")
+    void releaseConnectionTest() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
 
         DataSourceUtils.releaseConnection(connection, dataSource);
 
+        verify(connection, times(1)).close();
+    }
+
+    @Test
+    @DisplayName("releaseConnection 이 한번 참조 된 Connection 을 닫는다.")
+    void releaseConnectionOneTimeBoundConnectionTest() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+
+        final Connection firstConnection = DataSourceUtils.getConnection(dataSource);
+        DataSourceUtils.releaseConnection(firstConnection, dataSource);
+
+        verify(connection, times(1)).close();
+    }
+
+    @Test
+    @DisplayName("releaseConnection 이 두번 이상 참조 된 Connection 은 닫지 않는다.")
+    void releaseConnectionMoreThanOneTimesBoundConnectionTest() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        final Connection firstConnection = DataSourceUtils.getConnection(dataSource);
+        final Connection secondConnection = DataSourceUtils.getConnection(dataSource);
+
+        DataSourceUtils.releaseConnection(secondConnection, dataSource);
+
         verify(connection, never()).close();
+    }
+
+    @Test
+    @DisplayName("releaseConnection 이 참조 된 횟수만큼 호출 되면 Connection 은 닫는다.")
+    void releaseConnectionSameTimesBoundConnectionTest() throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        final Connection firstConnection = DataSourceUtils.getConnection(dataSource);
+        final Connection secondConnection = DataSourceUtils.getConnection(dataSource);
+
+        DataSourceUtils.releaseConnection(firstConnection, dataSource);
+        DataSourceUtils.releaseConnection(secondConnection, dataSource);
+
+        verify(connection, times(1)).close();
     }
 }
