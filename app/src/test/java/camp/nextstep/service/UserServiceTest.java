@@ -7,6 +7,7 @@ import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
+import camp.nextstep.transaction.DataSourceTransactionManager;
 import camp.nextstep.transaction.support.TransactionTemplate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,7 @@ class UserServiceTest {
         this.dataSource = myConfiguration.dataSource();
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.userDao = new UserDao(jdbcTemplate);
-        this.transactionTemplate = new TransactionTemplate(dataSource);
+        this.transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
 
         DatabasePopulatorUtils.execute(dataSource);
         final var user = new User("gugu", "password", "hkkang@woowahan.com");
