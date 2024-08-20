@@ -18,3 +18,12 @@
 ## 학습 테스트
 1. [ConnectionPool](study/src/test/java/connectionpool)
 2. [Transaction](study/src/test/java/transaction)
+
+## 1단계 - JDBC 라이브러리 구현하기
+- [x] RowMapper 인터페이스 구현
+- [ ] JdbcTemplate 클래스 구현
+  - [ ] findAll 메서드 구현
+  - [x] findById 메서드 구현
+  - [ ] findByAccount 메서드 구현
+  - [x] insert 메서드 구현
+  - [ ] update 메서드 구현
