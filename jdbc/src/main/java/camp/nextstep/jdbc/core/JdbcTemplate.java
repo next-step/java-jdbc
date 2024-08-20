@@ -53,11 +53,9 @@ public class JdbcTemplate {
     }
 
     public <T> T queryForObject(String sql, RowMapper<T> rowMapper, Object... params) {
-        List<T> result = query(sql, rowMapper, params);
-        if (result.isEmpty()) {
-            return null;
-        }
-        return result.get(0);
+        return query(sql, rowMapper, params).stream()
+                                            .findFirst()
+                                            .orElse(null);
     }
 
     private void setParameters(Object[] params, PreparedStatement preparedStatement) throws SQLException {
