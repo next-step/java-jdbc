@@ -4,8 +4,7 @@ import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,10 +40,12 @@ class UserDaoTest {
 
     @Test
     void findByAccount() {
-        final var account = "gugu";
-        final var user = userDao.findByAccount(account);
+        final var user = new User("find-account", "password", "hkkang@woowahan.com");
+        userDao.insert(user);
 
-        assertThat(user.getAccount()).isEqualTo(account);
+        final var actual = userDao.findByAccount(user.getAccount());
+
+        assertThat(actual.getAccount()).isEqualTo("find-account");
     }
 
     @Test
@@ -53,7 +54,7 @@ class UserDaoTest {
         final var user = new User(account, "password", "hkkang@woowahan.com");
         userDao.insert(user);
 
-        final var actual = userDao.findById(2L);
+        final var actual = userDao.findByAccount(account);
 
         assertThat(actual.getAccount()).isEqualTo(account);
     }
