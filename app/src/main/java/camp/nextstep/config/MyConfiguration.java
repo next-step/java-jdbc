@@ -1,6 +1,8 @@
 package camp.nextstep.config;
 
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.jdbc.datasource.DataSourceTransactionManager;
+import camp.nextstep.jdbc.datasource.TransactionManager;
 import com.interface21.context.annotation.Bean;
 import com.interface21.context.annotation.ComponentScan;
 import com.interface21.context.annotation.Configuration;
@@ -30,6 +32,11 @@ public class MyConfiguration {
     @Bean
     public JdbcTemplate jdbcTemplate(final DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public TransactionManager transactionManager(final DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
     }
 
     @Bean
