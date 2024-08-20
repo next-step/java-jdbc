@@ -6,17 +6,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.IllegalTransactionStateException;
+import org.springframework.transaction.NestedTransactionNotSupportedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertThrows;
 
 /**
  * 트랜잭션 전파(Transaction Propagation)란?
  * 트랜잭션의 경계에서 이미 진행 중인 트랜잭션이 있을 때 또는 없을 때 어떻게 동작할 것인가를 결정하는 방식을 말한다.
- *
+ * <p>
  * FirstUserService 클래스의 메서드를 실행할 때 첫 번째 트랜잭션이 생성된다.
  * SecondUserService 클래스의 메서드를 실행할 때 두 번째 트랜잭션이 어떻게 되는지 관찰해보자.
- *
+ * <p>
  * https://docs.spring.io/spring-framework/docs/current/reference/html/data-access.html#tx-propagation
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -41,12 +44,14 @@ class Stage2Test {
      */
     @Test
     void testRequired() {
+        // firstUserService.saveFirstTransactionWithRequired() 메서드에서 생성한 트랜잭션을
+        // secondUserService.saveSecondTransactionWithRequired() 메서드에서도 사용한다.
         final var actual = firstUserService.saveFirstTransactionWithRequired();
 
         log.info("transactions : {}", actual);
         assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+                .hasSize(1)
+                .containsExactly("transaction.stage2.FirstUserService.saveFirstTransactionWithRequired");
     }
 
     /**
@@ -55,12 +60,15 @@ class Stage2Test {
      */
     @Test
     void testRequiredNew() {
+        // firstUserService.saveFirstTransactionWithRequiredNew() 메서드에서 생성한 트랜잭션을
+        // secondUserService.saveSecondTransactionWithRequiresNew() 메서드에서 사용하지 않고 새로 생성하였다
         final var actual = firstUserService.saveFirstTransactionWithRequiredNew();
 
         log.info("transactions : {}", actual);
         assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+                .hasSize(2)
+                .containsExactly("transaction.stage2.SecondUserService.saveSecondTransactionWithRequiresNew",
+                                 "transaction.stage2.FirstUserService.saveFirstTransactionWithRequiredNew");
     }
 
     /**
@@ -69,12 +77,14 @@ class Stage2Test {
      */
     @Test
     void testRequiredNewWithRollback() {
-        assertThat(firstUserService.findAll()).hasSize(-1);
+        // 안쪽에서 생성된 secondUserService 의 saveSecondTransactionWithRequiresNew() 메서드는 정상적으로 실행되었고
+        // 그 후 예외가 발생하면서 바깥에서 먼저 생성한 트랜잭션만 롤백된다.
+        assertThat(firstUserService.findAll()).hasSize(0);
 
         assertThatThrownBy(() -> firstUserService.saveAndExceptionWithRequiredNew())
                 .isInstanceOf(RuntimeException.class);
 
-        assertThat(firstUserService.findAll()).hasSize(-1);
+        assertThat(firstUserService.findAll()).hasSize(1);
     }
 
     /**
@@ -83,12 +93,17 @@ class Stage2Test {
      */
     @Test
     void testSupports() {
+        // 트랜잭션 없이 실행되면 saveSecondTransactionWithSupports 만 트랜잭션을 생성하여 실행된다.
+        // 따라서 아래 actual 은 1.
+        // insert 구문은 각각 하나씩 2개 실행된다.
         final var actual = firstUserService.saveFirstTransactionWithSupports();
 
         log.info("transactions : {}", actual);
         assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+                .hasSize(1)
+                .containsExactly("transaction.stage2.SecondUserService.saveSecondTransactionWithSupports");
+
+        assertThat(firstUserService.findAll()).hasSize(2);
     }
 
     /**
@@ -98,29 +113,32 @@ class Stage2Test {
      */
     @Test
     void testMandatory() {
-        final var actual = firstUserService.saveFirstTransactionWithMandatory();
+        // MANDATORY 가 설정돼 있는 메서드를 실행할 때 트랜잭션이 없으므로 예외가 발생한다.
+        // 그래서 firstUserService.saveFirstTransactionWithMandatory() 메서드에서만 user 가 하나 생성된다.
+        assertThrows(IllegalTransactionStateException.class,
+                     () -> firstUserService.saveFirstTransactionWithMandatory());
 
-        log.info("transactions : {}", actual);
-        assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+        assertThat(firstUserService.findAll()).hasSize(1);
     }
 
     /**
      * 아래 테스트는 몇 개의 물리적 트랜잭션이 동작할까?
      * FirstUserService.saveFirstTransactionWithNotSupported() 메서드의 @Transactional을 주석 처리하자.
      * 다시 테스트를 실행하면 몇 개의 물리적 트랜잭션이 동작할까?
-     *
+     * <p>
      * 스프링 공식 문서에서 물리적 트랜잭션과 논리적 트랜잭션의 차이점이 무엇인지 찾아보자.
      */
     @Test
     void testNotSupported() {
+        // 주석처리하기 전에는 2개의 물리적 트랜잭션이 생성되지만 SecondUserService.saveSecondTransactionWithNotSupported 에서도 Active 되지 않는다.
+        // 주석처리하면 saveSecondTransactionWithNotSupported() 에서 1개의 트랜잭션이 생성되지만 그것도 Active 되지 않는다.
         final var actual = firstUserService.saveFirstTransactionWithNotSupported();
 
         log.info("transactions : {}", actual);
         assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+                .hasSize(2)
+                .containsExactly("transaction.stage2.SecondUserService.saveSecondTransactionWithNotSupported",
+                                 "transaction.stage2.FirstUserService.saveFirstTransactionWithNotSupported");
     }
 
     /**
@@ -129,12 +147,17 @@ class Stage2Test {
      */
     @Test
     void testNested() {
-        final var actual = firstUserService.saveFirstTransactionWithNested();
+        // 트랜잭션을 생성한 후 nested 트랜잭션을 하나 더 생성하라고 요구하는데 이 때 아래와 같은 메세지와 함께 예외가 발생한다.
+        // JpaDialect does not support savepoints - check your JPA provider's capabilities
+        // 아예 첫번째 트랜잭션을 만들지 않으면 새 트랜잭션을 만들면서 코드가 동작한다.
+        assertThrows(NestedTransactionNotSupportedException.class,
+                     () -> firstUserService.saveFirstTransactionWithNested());
+//        final var actual = firstUserService.saveFirstTransactionWithNested();
 
-        log.info("transactions : {}", actual);
-        assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+//        log.info("transactions : {}", actual);
+//        assertThat(actual)
+//                .hasSize(0)
+//                .containsExactly("");
     }
 
     /**
@@ -142,11 +165,15 @@ class Stage2Test {
      */
     @Test
     void testNever() {
-        final var actual = firstUserService.saveFirstTransactionWithNever();
+        // 트랜잭션이 있을 때 NEVER 설정된 메서드를 실행하면 IllegalTransactionStateException 예외가 발생한다.
+        // 아예 트랜잭션을 생성하지 않으면 NEVER 설정된 메서드를 실행할 때 예외가 발생하지 않는다.
+        assertThrows(IllegalTransactionStateException.class,
+                     () -> firstUserService.saveFirstTransactionWithNever());
+//        final var actual = firstUserService.saveFirstTransactionWithNever();
 
-        log.info("transactions : {}", actual);
-        assertThat(actual)
-                .hasSize(0)
-                .containsExactly("");
+//        log.info("transactions : {}", actual);
+//        assertThat(actual)
+//                .hasSize(0)
+//                .containsExactly("");
     }
 }
