@@ -32,7 +32,7 @@ public class JdbcTemplate {
         }
     }
 
-    public <T> T queryForObject(final String sql, final RowMapper<T> rowMapper, final Object... args) {
+    public <T> T execurteQueryForObject(final String sql, final RowMapper<T> rowMapper, final Object... args) {
         final List<T> results = executeQuery(sql, rowMapper, args);
         if (results.size() != 1) {
             throw new JdbcException("Expected 1 result, got " + results.size());
@@ -40,7 +40,7 @@ public class JdbcTemplate {
         return results.get(0);
     }
 
-    private <T> List<T> executeQuery(final String sql, final RowMapper rowMapper, final Object... args) {
+    public <T> List<T> executeQuery(final String sql, final RowMapper rowMapper, final Object... args) {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement pstmt = connection.prepareStatement(sql)) {
             setParams(args, pstmt);

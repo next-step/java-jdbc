@@ -35,13 +35,13 @@ public class UserDao {
     }
 
     public List<User> findAll() {
-        // todo
-        return null;
+        final var sql = "select * from users";
+        return jdbcTemplate.executeQuery(sql, new UserRowMapper());
     }
 
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
-        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id);
+        return jdbcTemplate.execurteQueryForObject(sql, new UserRowMapper(), id);
     }
 
     public User findByAccount(final String account) {
