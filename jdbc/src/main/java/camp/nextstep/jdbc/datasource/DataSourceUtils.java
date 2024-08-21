@@ -1,36 +1,56 @@
 package camp.nextstep.jdbc.datasource;
 
 import camp.nextstep.jdbc.CannotGetJdbcConnectionException;
+import camp.nextstep.transaction.support.ConnectionHolder;
 import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-// 4단계 미션에서 사용할 것
 public abstract class DataSourceUtils {
 
-    private DataSourceUtils() {}
+    private DataSourceUtils() {
+    }
 
-    public static Connection getConnection(DataSource dataSource) throws CannotGetJdbcConnectionException {
-        Connection connection = TransactionSynchronizationManager.getResource(dataSource);
-        if (connection != null) {
-            return connection;
+    public static Connection getConnection(final DataSource dataSource) throws CannotGetJdbcConnectionException {
+        final ConnectionHolder connectionHolder = TransactionSynchronizationManager.getResource(dataSource);
+
+        if (connectionHolder != null) {
+            connectionHolder.requested();
+            return connectionHolder.getConnection();
         }
 
         try {
-            connection = dataSource.getConnection();
+            final Connection connection = dataSource.getConnection();
             TransactionSynchronizationManager.bindResource(dataSource, connection);
             return connection;
-        } catch (SQLException ex) {
+        } catch (final SQLException ex) {
             throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", ex);
         }
     }
 
-    public static void releaseConnection(Connection connection, DataSource dataSource) {
+    public static void releaseConnection(final Connection connection, final DataSource dataSource) {
+        final ConnectionHolder connectionHolder = TransactionSynchronizationManager.getResource(dataSource);
+
+        if (connectionHolder == null) {
+            closeConnection(connection);
+            return;
+        }
+
+        connectionHolder.released();
+
+        if (connectionHolder.isOpen()) {
+            return;
+        }
+        TransactionSynchronizationManager.unbindResource(dataSource);
+        closeConnection(connection);
+    }
+
+    private static void closeConnection(final Connection connection) {
         try {
             connection.close();
-        } catch (SQLException ex) {
+        } catch (final SQLException e) {
             throw new CannotGetJdbcConnectionException("Failed to close JDBC Connection");
         }
     }

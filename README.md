@@ -79,9 +79,58 @@
 - userDao 와 userHistoryDao 가 하나의 Connection 객체를 사용하도록 한다.
 
 - TransactionSynchronizationManager
-  - 실행 중인 Thread 의 DataSource 별 Connection 을 관리하는 객체
+    - 실행 중인 Thread 의 DataSource 별 Connection 을 관리하는 객체
 - TransactionTemplate
-  - TransactionSynchronizationManager 를 이용해서 connection 을 사용하는 객체
-  - 정상 처리시 commit 을 한다.
-  - 예외 발생 시 rollback 을 한다.
-  - 종료 시 connection 을 닫고 TransactionSynchronizationManager 에 connection 을 제거한다.
+    - TransactionSynchronizationManager 를 이용해서 connection 을 사용하는 객체
+    - 정상 처리시 commit 을 한다.
+    - 예외 발생 시 rollback 을 한다.
+    - 종료 시 connection 을 닫고 TransactionSynchronizationManager 에 connection 을 제거한다.
+
+## 4단계 - 트랜잭션 동기화 구현하기
+
+### 요구사항
+
+- Transaction synchronization 적용하기
+    - Connection 객체를 가져오는 부분은 `DataSourceUtils` 를 사용하도록 수정한다.
+    - `TransactionSynchronizationManager` 를 통해 Thread 별로 관리하도록 한다.
+- 인터페이스를 활용하여 트랜잭션 서비스를 추상화 해 비지니스 로직과 데이터 액세스 로직을 분리한다.
+    - `TxUserService` 를 활용해 트랜잭션 처리를 하고 내부 로직은 위임한다.
+    - 아래의 테스트가 통과하도록 바꾸자
+
+```java
+
+@Test
+void testTransactionRollback() {
+    // 트랜잭션 롤백 테스트를 위해 mock으로 교체
+    final var userHistoryDao = new MockUserHistoryDao(jdbcTemplate);
+    // 애플리케이션 서비스
+    final var appUserService = new AppUserService(userDao, userHistoryDao);
+    // 트랜잭션 서비스 추상화
+    final var userService = new TxUserService(appUserService);
+
+    final var newPassword = "newPassword";
+    final var createdBy = "gugu";
+    // 트랜잭션이 정상 동작하는지 확인하기 위해 의도적으로 MockUserHistoryDao에서 예외를 발생시킨다.
+    assertThrows(DataAccessException.class,
+            () -> userService.changePassword(1L, newPassword, createdBy));
+
+    final var actual = userService.findById(1L);
+
+    assertThat(actual.getPassword()).isNotEqualTo(newPassword);
+}
+```
+
+### 생각해보기
+
+- PlatformTransactionManager 가 어떻게 추상화되어 있는가?
+    - DataSourceTransactionManager
+      - JDBC 를 사용한 로컬 트랜잭션 관리
+      - 하나의 데이터 소스를 대상으로 트랜잭션을 관리
+    - JpaTransactionManager
+      - JPA 를 사용하는 애플리케이션에서 트랜잭션 관리
+      - JPA EntityManager 를 통해 트랜잭션을 관리
+    - JmsTransactionManager
+      - JMS(Java Message Service)에서의 트랜잭션 관리
+    - JtaTransactionManager
+      - JTA(Java Transaction API)를 사용한 글로벌 트랜잭션 관리
+      - 여러 리소스를 하나의 트랜잭션으로 묶어 관리

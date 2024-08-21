@@ -1,6 +1,8 @@
 package camp.nextstep.config;
 
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.transaction.DataSourceTransactionManager;
+import camp.nextstep.transaction.PlatformTransactionManager;
 import camp.nextstep.transaction.support.TransactionTemplate;
 import com.interface21.context.annotation.Bean;
 import com.interface21.context.annotation.ComponentScan;
@@ -34,8 +36,13 @@ public class MyConfiguration {
     }
 
     @Bean
-    public TransactionTemplate transactionTemplate(final DataSource dataSource) {
-        return new TransactionTemplate(dataSource);
+    public PlatformTransactionManager platformTransactionManager(final DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    public TransactionTemplate transactionTemplate(final PlatformTransactionManager platformTransactionManager) {
+        return new TransactionTemplate(platformTransactionManager);
     }
 
     @Bean
