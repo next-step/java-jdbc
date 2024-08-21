@@ -1,6 +1,6 @@
 package camp.nextstep.jdbc.core;
 
-import java.sql.Connection;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,8 +21,7 @@ public class JdbcTemplate {
     }
 
     public void update(String sql, Object... params) {
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (PreparedStatement preparedStatement = DataSourceUtils.getConnection(dataSource).prepareStatement(sql)) {
             log.debug("query : {}", sql);
 
             setParameters(params, preparedStatement);
@@ -34,8 +33,7 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... params) {
-        try (Connection conn = dataSource.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+        try (PreparedStatement preparedStatement = DataSourceUtils.getConnection(dataSource).prepareStatement(sql)) {
             log.debug("query : {}", sql);
 
             setParameters(params, preparedStatement);
