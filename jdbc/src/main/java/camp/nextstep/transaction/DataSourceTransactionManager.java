@@ -45,6 +45,13 @@ public class DataSourceTransactionManager implements TransactionManager {
 
     @Override
     public void close() {
-        DataSourceUtils.releaseConnection(dataSource);
+        try {
+            Connection connection = DataSourceUtils.getConnection(dataSource);
+            connection.setAutoCommit(true);
+            DataSourceUtils.releaseConnection(dataSource);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
