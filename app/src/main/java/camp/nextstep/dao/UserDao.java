@@ -38,11 +38,13 @@ public class UserDao {
 
     public List<User> findAll() {
         final String sql = "select * from users";
+
         return jdbcTemplate.query(sql, (RowMapper<User>) UserDao::mapRow);
     }
 
     public User findById(final Long id) {
         final String sql = "select id, account, password, email from users where id = ?";
+
         return jdbcTemplate.query(sql, (ResultSetExtractor<User>) UserDao::mapRow, id);
     }
 
@@ -52,17 +54,12 @@ public class UserDao {
         return jdbcTemplate.query(sql, (ResultSetExtractor<User>) UserDao::mapRow, account);
     }
 
-    private static User mapRow(ResultSet rs) {
-        try {
-            return new User(
-                    rs.getLong("id"),
-                    rs.getString("account"),
-                    rs.getString("password"),
-                    rs.getString("email")
-            );
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
+    private static User mapRow(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getLong("id"),
+                rs.getString("account"),
+                rs.getString("password"),
+                rs.getString("email")
+        );
     }
 }
