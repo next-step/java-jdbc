@@ -2,6 +2,7 @@ package camp.nextstep.jdbc.datasource;
 
 import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.transaction.support.TransactionStatus;
+import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
@@ -28,11 +29,11 @@ public class PlatformTransactionalManager implements TransactionalManager {
     @Override
     public void commit(TransactionStatus status) {
         try {
-            DataSourceUtils
-                .getConnection(dataSource)
-                .commit();
+            Connection connection = DataSourceUtils
+                .getConnection(dataSource);
+            connection.rollback();
 
-            doCleanUpAfterCompletion();
+            doCleanUpAfterCompletion(connection);
         } catch (SQLException e) {
             throw new DataAccessException(e);
         }
@@ -41,19 +42,19 @@ public class PlatformTransactionalManager implements TransactionalManager {
     @Override
     public void rollback(TransactionStatus status) {
         try {
-            DataSourceUtils
-                .getConnection(dataSource)
-                .rollback();
+            Connection connection = DataSourceUtils
+                .getConnection(dataSource);
+            connection.rollback();
 
-            doCleanUpAfterCompletion();
+            doCleanUpAfterCompletion(connection);
         } catch (SQLException e) {
             throw new DataAccessException(e);
         }
     }
 
     @Override
-    public void doCleanUpAfterCompletion() {
-
+    public void doCleanUpAfterCompletion(Connection connection) {
+        DataSourceUtils.releaseConnection(connection, dataSource);
     }
 
 }
