@@ -4,21 +4,25 @@ import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.sql.DataSource;
+import java.sql.SQLException;
 
 class UserDaoTest {
 
     private UserDao userDao;
+    private DataSource dataSource;
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void setup() {
         final var myConfiguration = new MyConfiguration();
-        final var dataSource = myConfiguration.dataSource();
+        dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate = new JdbcTemplate(dataSource);
 
         userDao = new UserDao(jdbcTemplate);
         final var user = new User("setup-gugu", "password", "hkkang@woowahan.com");
@@ -61,12 +65,12 @@ class UserDaoTest {
     }
 
     @Test
-    void update() {
+    void update() throws SQLException {
         final var newPassword = "password99";
         final var user = userDao.findById(1L);
         user.changePassword(newPassword);
 
-        userDao.update(user);
+        userDao.update(dataSource.getConnection(), user);
 
         final var actual = userDao.findById(1L);
 
