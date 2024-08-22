@@ -1,6 +1,5 @@
 package camp.nextstep.jdbc.datasource;
 
-import java.sql.Connection;
 import javax.sql.DataSource;
 
 public class DataSourceTransactionManager implements TransactionManager {
@@ -41,8 +40,6 @@ public class DataSourceTransactionManager implements TransactionManager {
     @Override
     public void close() {
         try {
-            Connection connection = DataSourceUtils.getConnection(dataSource);
-            connection.setAutoCommit(true);
             DataSourceUtils.releaseConnection(dataSource);
         } catch (Exception e) {
             throw new RuntimeException(e);
