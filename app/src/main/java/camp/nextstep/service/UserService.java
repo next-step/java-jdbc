@@ -11,45 +11,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
-@Service
-public class UserService {
+public interface UserService {
 
-    private final TransactionManager transactionManager;
-    private final UserDao userDao;
-    private final UserHistoryDao userHistoryDao;
+    User findByAccount(final String account);
 
-    @Autowired
-    public UserService(final UserDao userDao, final UserHistoryDao userHistoryDao, final TransactionManager transactionManager) {
-        this.userDao = userDao;
-        this.userHistoryDao = userHistoryDao;
-        this.transactionManager = transactionManager;
-    }
+    User findById(final long id);
 
-    public User findByAccount(final String account) {
-        return userDao.findByAccount(account);
-    }
+    void save(final User user);
 
-    public User findById(final long id) {
-        return userDao.findById(id);
-    }
-
-    public void save(final User user) {
-        userDao.insert(user);
-    }
-
-    public void changePassword(final long id, final String newPassword, final String createBy) {
-        transactionManager.begin();
-        try {
-            final var user = findById(id);
-            user.changePassword(newPassword);
-            userDao.update(user);
-            userHistoryDao.log(new UserHistory(user, createBy));
-            transactionManager.commit();
-        } catch (Exception e) {
-            transactionManager.rollback();
-            throw e;
-        } finally {
-            transactionManager.close();
-        }
-    }
+    void changePassword(final long id, final String newPassword, final String createdBy);
 }
