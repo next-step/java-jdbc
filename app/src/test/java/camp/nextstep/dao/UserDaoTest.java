@@ -1,30 +1,32 @@
 package camp.nextstep.dao;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
+import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
-import org.junit.jupiter.api.BeforeEach;
+import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UserDaoTest {
 
-    private UserDao userDao;
+    private static UserDao userDao;
+    private static DataSource dataSource;
 
-    @BeforeEach
-    void setup() {
+    @BeforeAll
+    static void setup() {
         final var myConfiguration = new MyConfiguration();
-        final var dataSource = myConfiguration.dataSource();
+        dataSource = myConfiguration.dataSource();
+        userDao = new UserDao(new JdbcTemplate(dataSource));
         DatabasePopulatorUtils.execute(dataSource);
-
-        userDao = new UserDao(dataSource);
-        final var user = new User("gugu", "password", "hkkang@woowahan.com");
-        userDao.insert(user);
     }
 
     @Test
     void findAll() {
+        final var user = new User("gugu", "password", "hkkang@woowahan.com");
+        userDao.insert(user);
         final var users = userDao.findAll();
 
         assertThat(users).isNotEmpty();

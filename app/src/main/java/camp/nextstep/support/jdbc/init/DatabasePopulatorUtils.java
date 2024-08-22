@@ -42,5 +42,32 @@ public class DatabasePopulatorUtils {
         }
     }
 
+    public static void truncate(final DataSource dataSource) {
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            final var url = DatabasePopulatorUtils.class.getClassLoader().getResource("truncate.sql");
+            final var file = new File(url.getFile());
+            final var sql = Files.readString(file.toPath());
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            statement.execute(sql);
+        } catch (NullPointerException | IOException | SQLException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException ignored) {}
+
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ignored) {}
+        }
+    }
+
     private DatabasePopulatorUtils() {}
 }
