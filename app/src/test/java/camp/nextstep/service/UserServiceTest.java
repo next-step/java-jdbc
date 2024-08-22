@@ -7,14 +7,11 @@ import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@Disabled
 class UserServiceTest {
 
     private JdbcTemplate jdbcTemplate;
