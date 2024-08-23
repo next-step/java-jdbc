@@ -53,17 +53,6 @@ public class JdbcTemplate {
         return query(sql, new PreparedStatementSetterImpl(parameters), resultSetExtractor);
     }
 
-    public void update(final String sql, final PreparedStatementSetter pss) {
-        doExecute(sql, psmt -> {
-            pss.setValues(psmt);
-            psmt.executeUpdate();
-        });
-    }
-
-    public void update(final String sql, final Object... parameters) {
-        update(sql, new PreparedStatementSetterImpl(parameters));
-    }
-
     private <T> T doQuery(final String sql, final SqlQueryFunction<PreparedStatement, T> sqlQueryFunction) {
         try (final Connection conn = dataSource.getConnection();
              final PreparedStatement psmt = conn.prepareStatement(sql)) {
@@ -74,9 +63,34 @@ public class JdbcTemplate {
         }
     }
 
-    private void doExecute(final String sql, final SqlExecuteFunction<PreparedStatement> sqlExecuteFunction) {
-        try (final Connection conn = dataSource.getConnection();
-             final PreparedStatement psmt = conn.prepareStatement(sql)) {
+    public void update(final String sql, final Object... parameters) {
+        update(sql, new PreparedStatementSetterImpl(parameters));
+    }
+
+    public void update(final String sql, final PreparedStatementSetter pss) {
+        try (final Connection connection = dataSource.getConnection()) {
+            update(connection, sql, pss);
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            throw new DataAccessException(e);
+        }
+    }
+
+    public void update(final Connection connection, final String sql, final Object... parameters) {
+        update(connection, sql, new PreparedStatementSetterImpl(parameters));
+    }
+
+    public void update(final Connection connection, final String sql, final PreparedStatementSetter pss) {
+        doExecute(connection, sql, psmt -> {
+            pss.setValues(psmt);
+            psmt.executeUpdate();
+        });
+    }
+
+    private static void doExecute(final Connection connection,
+                                  final String sql,
+                                  final SqlExecuteFunction<PreparedStatement> sqlExecuteFunction) {
+        try (final PreparedStatement psmt = connection.prepareStatement(sql)) {
             sqlExecuteFunction.run(psmt);
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
