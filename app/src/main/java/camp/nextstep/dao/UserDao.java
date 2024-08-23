@@ -9,7 +9,6 @@ import com.interface21.context.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -31,10 +30,10 @@ public class UserDao {
         jdbcTemplate.update(sql, user.getAccount(), user.getPassword(), user.getEmail());
     }
 
-    public void update(Connection connection, final User user) {
+    public void update(final User user) {
         final var sql = "update users set password = ? where id = ?";
 
-        jdbcTemplate.update(connection, sql, user.getPassword(), user.getId());
+        jdbcTemplate.update(sql, user.getPassword(), user.getId());
     }
 
     public List<User> findAll() {
