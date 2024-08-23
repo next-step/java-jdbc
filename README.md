@@ -27,3 +27,8 @@
   - [x] findByAccount 메서드 구현
   - [x] insert 메서드 구현
   - [x] update 메서드 구현
+
+## 2단계 - 리팩터링
+- [x] Unchecked Exception을 사용해 예외 처리를 간결하게 구현한다.
+- [x] RowMapper 인터페이스를 제네릭으로 사용한다.
+- [x] PreparedStatementSetter 인터페이스를 가변인자로 사용한다.
