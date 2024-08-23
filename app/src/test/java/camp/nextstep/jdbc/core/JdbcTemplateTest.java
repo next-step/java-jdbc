@@ -2,6 +2,7 @@ package camp.nextstep.jdbc.core;
 
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.domain.User;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,10 @@ class JdbcTemplateTest {
         jdbcTemplate = new JdbcTemplate(dataSource);
 
         DatabasePopulatorUtils.execute(dataSource);
+
+        // NOTE: 커넥션이 없으면 동작하지 않아서, 이 쓰레드에서 사용할 커넥션을 확보해 줍니다.
+        DataSourceUtils.getConnection(dataSource);
+
         jdbcTemplate.update("insert into users(account, password, email) values('new-account', 'password', 'abc@example.com')");
     }
 
