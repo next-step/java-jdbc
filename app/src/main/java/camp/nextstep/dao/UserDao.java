@@ -31,16 +31,16 @@ public class UserDao {
 
     public List<User> findAll() {
         final var sql = "select * from users";
-        return jdbcTemplate.executeQuery(sql, new UserRowMapper());
+        return jdbcTemplate.executeQuery(sql, UserRowMapper.getInstance());
     }
 
     public User findById(final Long id) {
         final var sql = "select id, account, password, email from users where id = ?";
-        return jdbcTemplate.execurteQueryForObject(sql, new UserRowMapper(), id);
+        return jdbcTemplate.execurteQueryForObject(sql, UserRowMapper.getInstance(), id);
     }
 
     public User findByAccount(final String account) {
         final var sql = "select id, account, password, email from users where account = ?";
-        return jdbcTemplate.execurteQueryForObject(sql, new UserRowMapper(), account);
+        return jdbcTemplate.execurteQueryForObject(sql, UserRowMapper.getInstance(), account);
     }
 }
