@@ -18,3 +18,18 @@
 ## 학습 테스트
 1. [ConnectionPool](study/src/test/java/connectionpool)
 2. [Transaction](study/src/test/java/transaction)
+
+
+
+## 1단계 요구사항
+
+
+1. [x] UserDaoTest를 이용해서 리팩터링 진행
+2. [x] JdbcTemplate을 구현한다.  
+   - RowMapper 구현  (과거에 MetaEntity에 값 넣었던것이랑 동일)
+   - JdbcTemplate의 메서드들 생성
+     - queryForObejct
+     - query
+3. [x] 위의 기능들을 테스트로 검증한다.
+     
+
