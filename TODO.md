@@ -122,6 +122,46 @@ void testTransactionRollback() {
 
 https://madplay.github.io/post/java-threadlocal
 
+#### 로컬 트랜잭션
+
+https://docs.spring.io/spring-framework/reference/data-access/transaction/motivation.html
+
+전통적으로 EE 어플리케이션이 선택할 수 있는 트랜잭션 관리 모델이 두가지 있었다고 한다. global or local.
+
+로컬 트랜잭션은 JDBC 같은 리소스 하나에 대한 트랜잭션을 말한다. 사용하기는 쉽지만 여러 리소스에 대한 트랜잭션을 처리할 수 없다는 단점이 있다. 또다른 단점으로는 프로그래밍 모델에 침습적으로 코드를 작성하게
+된다고 한다.
+
+#### 글로벌 트랜잭션
+
+글로벌 트랜잭션은 여러 트랜잭션처리를 할 수 있는 리소스들을 하나로 묶어 처리할 수 있도록 해 준다.
+관계형 데이터베이스, 메세지 큐 등이 이에 해당한다.
+
+이전에는 글로벌 트랜잭션을 위해 EJB CMT 가 많이 사용되었으나 여러 불편함이 있었다.
+
+스프링에서는 이 두가지 트랜잭션 방식의 단점을 개선한다. 다양한 환경에서 동일한 프로그래밍 모델로 개발할 수 있게 도와준다. 선언적 방식과 프로그래머틱 방식을 모두 지원한다. 프로그래머틱 트랜잭션 관리를 이용하면
+개발자는 스프링 트랜잭션 추상화 레벨에서 트랜잭션을 제어할 수 있다. 선언적 트랜잭션 관리를 이용하면 트랜잭션에 관련된 코드를 거의 또는 아예 작성하지 않아도 된다. 이 덕분에 스프링 프레임웍의 트랜잭션 API 나
+기타 트랜잭션 API 에 독립적일 수 있다.
+
 #### PlatformTransactionManager
 
-#### 로컬 트랜잭션, 글로벌 트랜잭션, JTA
+https://docs.spring.io/spring-framework/reference/data-access/transaction/strategies.html
+
+PlatformTransactionManager 은 스프링의 트랜잭션 추상화의 핵심이다.
+
+트랜잭션을 시작/커밋/롤백하는 기능을 제공하고, 트랜잭션을 추상화하여 다룰 수 있게 해 주고, 트랜잭션 전략/격리수준 등을 쉽게 설정할 수 있게 해준다. 단일 인터페이스로 다양한 트랜잭션 API를 다룰 수 있다.
+PlatformTransactionManager 을 이용하면 JTA 를 직접 사용하는 것보다 테스트 코드도 훨씬 쉽게 작성할 수 있다.
+
+#### JTA
+
+Java Transaction API 의 준말.
+어플리케이션이 분산 트랜잭션을 다룰 수 있도록 지원한다.
+표준 자바 플랫폼에서 제공하는 jakarta.transaction.Transaction 을 이용한다.
+
+스프링 프레임웍에는 JtaTransactionManager 라는 클래스가 PlatformTransactionManager 인터페이스를 구현하여 JTA 를 지원한다.
+
+```
+org.springframework.transaction.jta.JtaTransactionManager
+< abstract class org.springframework.transaction.support.AbstractPlatformTransactionManager
+< interface org.springframework.transaction.PlatformTransactionManager
+< interface org.springframework.transaction.TransactionManager
+```
