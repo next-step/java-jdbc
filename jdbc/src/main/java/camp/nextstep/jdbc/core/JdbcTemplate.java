@@ -1,7 +1,7 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
-import camp.nextstep.transaction.support.TransactionSynchronizationManager;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class JdbcTemplate {
     }
 
     private <T> T doQuery(final String sql, final SqlQueryFunction<PreparedStatement, T> sqlQueryFunction) {
-        final Connection connection = TransactionSynchronizationManager.getResource(dataSource);
+        final Connection connection = DataSourceUtils.getConnection(dataSource);
 
         try (final PreparedStatement psmt = connection.prepareStatement(sql)) {
             return sqlQueryFunction.apply(psmt);
@@ -78,7 +78,7 @@ public class JdbcTemplate {
 
     private void doExecute(final String sql,
                            final SqlExecuteFunction<PreparedStatement> sqlExecuteFunction) {
-        Connection connection = TransactionSynchronizationManager.getResource(dataSource);
+        final Connection connection = DataSourceUtils.getConnection(dataSource);
 
         try (final PreparedStatement psmt = connection.prepareStatement(sql)) {
             sqlExecuteFunction.run(psmt);
