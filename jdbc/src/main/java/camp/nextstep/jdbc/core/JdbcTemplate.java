@@ -12,23 +12,20 @@ import org.slf4j.LoggerFactory;
 
 public class JdbcTemplate {
 
-    private static final int FIRST_INDEX = 1;
     private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
 
     private final DataSource dataSource;
+    private final PreparedStatementSetter preparedStatementSetter;
 
     public JdbcTemplate(final DataSource dataSource) {
         this.dataSource = dataSource;
+        this.preparedStatementSetter = new DefaultPreparedStatementSetter();
     }
 
     public void execute(final String sql, Object... args) {
         try (final PreparedStatement preparedStatement =
             dataSource.getConnection().prepareStatement(sql)) {
-
-            for (int i = FIRST_INDEX; i <= args.length; i++) {
-                preparedStatement.setObject(i, args[i - 1]);
-            }
-
+            preparedStatementSetter.setValues(preparedStatement, args);
             preparedStatement.executeUpdate();
         } catch (Exception e) {
             log.error("[Error] Query Exception has occured: " + sql, e);
@@ -41,18 +38,15 @@ public class JdbcTemplate {
         try (final PreparedStatement preparedStatement =
             dataSource.getConnection().prepareStatement(sql)) {
 
-            preparedStatement.setObject(FIRST_INDEX, arg);
-
+            preparedStatementSetter.setValues(preparedStatement, arg);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     return rowMapper.mapRow(resultSet);
                 }
-
                 return null;
             }
 
         } catch (Exception e) {
-
             log.error("[Error] Query Exception has occured: " + sql, e);
             throw new DataAccessException(e);
         }
