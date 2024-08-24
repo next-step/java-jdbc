@@ -1,5 +1,7 @@
 package camp.nextstep.domain;
 
+import java.util.Objects;
+
 public class User {
 
     private final String account;
@@ -57,5 +59,24 @@ public class User {
             ", email='" + email + '\'' +
             ", password='" + password + '\'' +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        User user = (User) object;
+        return Objects.equals(account, user.account) && Objects.equals(email,
+            user.email) && Objects.equals(id, user.id) && Objects.equals(password,
+            user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(account, email, id, password);
     }
 }
