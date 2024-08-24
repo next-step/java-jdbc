@@ -2,10 +2,15 @@ package camp.nextstep.domain;
 
 public class User {
 
-    private Long id;
     private final String account;
-    private String password;
     private final String email;
+    private Long id;
+    private String password;
+
+    public User() {
+        this.account = "";
+        this.email = "";
+    }
 
     public User(long id, String account, String password, String email) {
         this.id = id;
@@ -47,10 +52,10 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", account='" + account + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+            "id=" + id +
+            ", account='" + account + '\'' +
+            ", email='" + email + '\'' +
+            ", password='" + password + '\'' +
+            '}';
     }
 }

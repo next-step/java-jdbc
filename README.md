@@ -34,9 +34,9 @@
      
 ## 2단계 요구사항
 
-1. [] SQLException을 UncheckedException으로 변환합니다.
-2. [] RowMapper 인터페이스는 Object를 반환하고 있어서 캐스팅이 사용된다. 제네릭을 사용하도록 개선해보자.
-3. [] 람다를 적극적으로 활용해서 코드량을 줄여보자.
-4. [] 추가 요구사항 - Reflection 사용해서 오브젝트를 동적으로 만든다.
+1. [x] SQLException을 UncheckedException으로 변환합니다.
+2. [x] RowMapper 인터페이스는 Object를 반환하고 있어서 캐스팅이 사용된다. 제네릭을 사용하도록 개선해보자.
+3. [x] 람다를 적극적으로 활용해서 코드량을 줄여보자.
+4. [x] 추가 요구사항 - Reflection 사용해서 오브젝트를 동적으로 만든다.
 
    
