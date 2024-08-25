@@ -63,7 +63,7 @@ class Stage2Test {
                 log.info("Before acquire ");
                 try (Connection ignored = dataSource.getConnection()) {
                     log.info("After acquire ");
-                    quietlySleep(500); // Thread.sleep(500)과 동일한 기능
+                    quietlySleep(5000); // Thread.sleep(500)과 동일한 기능
                 }
             } catch (Exception e) {
             }
