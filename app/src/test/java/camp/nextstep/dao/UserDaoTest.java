@@ -8,23 +8,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
-
 class UserDaoTest {
 
     private UserDao userDao;
-    private DataSource dataSource;
-    private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void setup() {
         final var myConfiguration = new MyConfiguration();
-        dataSource = myConfiguration.dataSource();
+        final var dataSource = myConfiguration.dataSource();
         DatabasePopulatorUtils.execute(dataSource);
-        jdbcTemplate = new JdbcTemplate(dataSource);
 
-        userDao = new UserDao(jdbcTemplate);
+        userDao = new UserDao(new JdbcTemplate(dataSource));
         final var user = new User("setup-gugu", "password", "hkkang@woowahan.com");
         userDao.insert(user);
     }
@@ -65,12 +59,12 @@ class UserDaoTest {
     }
 
     @Test
-    void update() throws SQLException {
+    void update() {
         final var newPassword = "password99";
         final var user = userDao.findById(1L);
         user.changePassword(newPassword);
 
-        userDao.update(dataSource.getConnection(), user);
+        userDao.update(user);
 
         final var actual = userDao.findById(1L);
 

@@ -6,11 +6,7 @@ import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,15 +14,15 @@ import java.util.List;
 class JdbcTemplateTest {
 
     private JdbcTemplate jdbcTemplate;
-    private DataSource dataSource;
 
     @BeforeEach
     void setUp() {
         final var myConfiguration = new MyConfiguration();
-        dataSource = myConfiguration.dataSource();
+        final var dataSource = myConfiguration.dataSource();
         jdbcTemplate = new JdbcTemplate(dataSource);
 
         DatabasePopulatorUtils.execute(dataSource);
+
         jdbcTemplate.update("insert into users(account, password, email) values('new-account', 'password', 'abc@example.com')");
     }
 
@@ -99,25 +95,6 @@ class JdbcTemplateTest {
                 .hasFieldOrPropertyWithValue("id", 1L)
                 .hasFieldOrPropertyWithValue("account", givenAccount)
                 .hasFieldOrPropertyWithValue("password", givenPassword);
-    }
-
-    @Test
-    void testUpdateWithConnection() throws SQLException {
-        Connection connectionSpy = spy(dataSource.getConnection());
-        String givenAccount = "new-account";
-        String givenPassword = "new-password";
-
-        jdbcTemplate.update(connectionSpy,
-                            "update users set account=?, password=? where id=?",
-                            givenAccount,
-                            givenPassword,
-                            1L);
-
-        assertThat(findUserById(1L))
-                .hasFieldOrPropertyWithValue("account", givenAccount)
-                .hasFieldOrPropertyWithValue("password", givenPassword);
-
-        verify(connectionSpy).prepareStatement("update users set account=?, password=? where id=?");
     }
 
     private User mapUserRow(final ResultSet resultSet) throws SQLException {
