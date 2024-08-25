@@ -1,7 +1,7 @@
 package camp.nextstep.controller;
 
 import camp.nextstep.dto.UserDto;
-import camp.nextstep.service.UserService;
+import camp.nextstep.service.AppUserService;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Controller;
 import com.interface21.web.bind.annotation.RequestMapping;
@@ -14,17 +14,17 @@ import jakarta.servlet.http.HttpServletResponse;
 @Controller
 public class RegisterController {
 
-    private final UserService userService;
+    private final AppUserService appUserService;
 
     @Autowired
-    public RegisterController(final UserService userService) {
-        this.userService = userService;
+    public RegisterController(final AppUserService appUserService) {
+        this.appUserService = appUserService;
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ModelAndView register(final UserDto userDto) {
         final var user = userDto.toEntity();
-        userService.save(user);
+        appUserService.save(user);
         return new ModelAndView(new JspView("redirect:/index.jsp"));
     }
 

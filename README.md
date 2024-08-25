@@ -62,3 +62,18 @@
 4단계의 resource 
 
 https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html
+
+
+## 4단계 요구사항
+
+1. [x] Transaction 동기화를 위한 Transactional Synchronization 적용하기
+2. [x] 트랜잭션 서비스 추상화 하기
+3. [] 트랜잭션 테스트가 실제로 통과하는지 확인하기
+   - [] 실제로 쓰레드 여러개 띄어서 트랜잭션 독립적인지 확인
+
+
+키워드 정리
+- 로컬 트랜잭션
+- 글로벌 트랜잭션
+- JTA 
+
