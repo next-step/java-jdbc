@@ -74,6 +74,12 @@ https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframe
 
 키워드 정리
 - 로컬 트랜잭션
+  - 하나의 DB 커넥션 안에서 만드는 트랜잭션을 로컬 트랜잭션이라고 한다.
 - 글로벌 트랜잭션
+  - 별도의 트랜잭션 관리자를 통해서 트랜잭션을 관리하는 글로벌 트랜잭션 방식도 있다.
 - JTA 
+  - Java Transaction API를 사용해서 여러 리소스에 대한 트랜잭션을 종합적으로 제어할 수 있따.
+    -  2PC 를 사용할 때, 글로벌 트랜잭션을 사용하게되는데, 락이오래 걸린다;;
+    -  사용 거의 안한다. 
+    -  
 
