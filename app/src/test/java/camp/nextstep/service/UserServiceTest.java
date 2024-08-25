@@ -6,6 +6,8 @@ import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.jdbc.datasource.PlatformTransactionalManager;
+import camp.nextstep.jdbc.datasource.TransactionalManager;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -19,6 +21,7 @@ class UserServiceTest {
 
     private JdbcTemplate jdbcTemplate;
     private UserDao userDao;
+    private TransactionalManager transactionalManager;
 
     @BeforeEach
     void setUp() {
@@ -26,6 +29,7 @@ class UserServiceTest {
         final var dataSource = myConfiguration.dataSource();
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.userDao = new UserDao(jdbcTemplate);
+        this.transactionalManager = new PlatformTransactionalManager(dataSource);
 
         DatabasePopulatorUtils.execute(dataSource);
         final var user = new User("gugu", "password", "hkkang@woowahan.com");
@@ -35,7 +39,7 @@ class UserServiceTest {
     @Test
     void testChangePassword() {
         final var userHistoryDao = new UserHistoryDao(jdbcTemplate);
-        final var userService = new UserService(userDao, userHistoryDao);
+        final var userService = new UserService(userDao, userHistoryDao, transactionalManager);
 
         final var newPassword = "qqqqq";
         final var createBy = "gugu";
@@ -50,7 +54,7 @@ class UserServiceTest {
     void testTransactionRollback() {
         // 트랜잭션 롤백 테스트를 위해 mock으로 교체
         final var userHistoryDao = new MockUserHistoryDao(jdbcTemplate);
-        final var userService = new UserService(userDao, userHistoryDao);
+        final var userService = new UserService(userDao, userHistoryDao, transactionalManager);
 
         final var newPassword = "newPassword";
         final var createBy = "gugu";

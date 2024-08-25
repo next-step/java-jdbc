@@ -7,6 +7,6 @@ public record UserDto(String account,
                       String email) {
 
     public User toEntity() {
-        return new User(2, account, password, email);
+        return new User(2L, account, password, email);
     }
 }
