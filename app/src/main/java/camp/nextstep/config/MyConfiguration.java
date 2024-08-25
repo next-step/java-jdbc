@@ -35,8 +35,8 @@ public class MyConfiguration {
     }
 
     @Bean
-    public TransactionalManager transactionalManager(final DataSource dataSource) {
-        return new PlatformTransactionalManager(dataSource);
+    public TransactionalManager transactionalManager() {
+        return new PlatformTransactionalManager();
     }
 
     @Bean
