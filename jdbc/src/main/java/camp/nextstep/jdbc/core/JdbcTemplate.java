@@ -1,6 +1,8 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.dao.DataAccessException;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -12,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 public class JdbcTemplate {
 
-    private static final int FIRST_INDEX = 1;
     private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
 
     private final DataSource dataSource;
@@ -24,8 +25,10 @@ public class JdbcTemplate {
     }
 
     public void execute(final String sql, Object... args) {
+        Connection connection = DataSourceUtils.getConnection(dataSource);
+
         try (final PreparedStatement preparedStatement =
-            dataSource.getConnection().prepareStatement(sql)) {
+            connection.prepareStatement(sql)) {
             preparedStatementSetter.setValues(preparedStatement, args);
             preparedStatement.executeUpdate();
         } catch (Exception e) {
