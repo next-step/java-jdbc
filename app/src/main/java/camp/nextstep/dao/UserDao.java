@@ -1,6 +1,7 @@
 package camp.nextstep.dao;
 
 import camp.nextstep.domain.User;
+import camp.nextstep.jdbc.core.GenericRowMapper;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.jdbc.core.RowMapper;
 import com.interface21.beans.factory.annotation.Autowired;
@@ -22,10 +23,12 @@ public class UserDao {
     private static final Logger log = LoggerFactory.getLogger(UserDao.class);
 
     private final JdbcTemplate jdbcTemplate;
-
+    private final RowMapper<User> genericRowMapper;
+    
     @Autowired
     public UserDao(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.genericRowMapper = new GenericRowMapper<>(User.class);
     }
 
     public void insert(final User user) {
@@ -42,27 +45,19 @@ public class UserDao {
     public List<User> findAll() {
         final var sql = "SELECT id, account, password, email FROM users";
 
-        return jdbcTemplate.query(sql, UserRowMappers.GET);
+        return jdbcTemplate.query(sql, genericRowMapper);
     }
 
     public User findById(final Long id) {
         final var sql = "SELECT id, account, password, email FROM users WHERE id = ?";
 
-        return jdbcTemplate.queryForObject(sql, UserRowMappers.GET, id);
+        return jdbcTemplate.queryForObject(sql, genericRowMapper, id);
     }
 
     public User findByAccount(final String account) {
         final var sql = "SELECT id, account, password, email FROM users WHERE account = ?";
 
-        return jdbcTemplate.queryForObject(sql, UserRowMappers.GET, account);
+        return jdbcTemplate.queryForObject(sql, genericRowMapper, account);
     }
 
-    private static final class UserRowMappers {
-
-        public static final RowMapper<User> GET = user -> new User(user.getLong("id"),
-            user.getString("account"),
-            user.getString("password"),
-            user.getString("email"));
-
-    }
 }

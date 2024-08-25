@@ -1,11 +1,18 @@
 package camp.nextstep.domain;
 
+import java.util.Objects;
+
 public class User {
 
-    private Long id;
     private final String account;
-    private String password;
     private final String email;
+    private Long id;
+    private String password;
+
+    public User() {
+        this.account = "";
+        this.email = "";
+    }
 
     public User(long id, String account, String password, String email) {
         this.id = id;
@@ -47,10 +54,29 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", account='" + account + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+            "id=" + id +
+            ", account='" + account + '\'' +
+            ", email='" + email + '\'' +
+            ", password='" + password + '\'' +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        User user = (User) object;
+        return Objects.equals(account, user.account) && Objects.equals(email,
+            user.email) && Objects.equals(id, user.id) && Objects.equals(password,
+            user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(account, email, id, password);
     }
 }
