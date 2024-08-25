@@ -47,7 +47,7 @@
 ## 3단계 요구사항
 
 
-1. [] Transaction 경계 설정하기
+1. [x] Transaction 경계 설정하기
    - 한 트랜잭션으로 묶으려면, 동일한 Connection 객체를 사용한다.
 
 
