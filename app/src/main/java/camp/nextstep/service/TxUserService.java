@@ -16,7 +16,8 @@ public class TxUserService implements UserService {
     private final DataSource dataSource;
 
     @Autowired
-    public TxUserService(UserService userService, TransactionalManager transactionalManager, DataSource dataSource) {
+    public TxUserService(UserService userService, TransactionalManager transactionalManager,
+        DataSource dataSource) {
         this.userService = userService;
         this.transactionalManager = transactionalManager;
         this.dataSource = dataSource;
@@ -41,10 +42,10 @@ public class TxUserService implements UserService {
     public void changePassword(long id, String newPassword, String createdBy) {
         TransactionStatus transactionStatus = transactionalManager.getTransaction(dataSource);
 
-        try{
+        try {
             userService.changePassword(id, newPassword, createdBy);
             transactionalManager.commit(transactionStatus, dataSource);
-        } catch (Exception e){
+        } catch (Exception e) {
             transactionalManager.rollback(transactionStatus, dataSource);
             throw e;
         } finally {

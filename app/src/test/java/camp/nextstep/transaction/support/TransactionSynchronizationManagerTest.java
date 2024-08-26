@@ -1,7 +1,6 @@
 package camp.nextstep.transaction.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.dao.UserDao;
@@ -9,21 +8,23 @@ import camp.nextstep.jdbc.core.JdbcTemplate;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class TransactionSynchronizationManagerTest {
+
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
     private UserDao userDao;
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         final var myConfiguration = new MyConfiguration();
         dataSource = myConfiguration.dataSource();
 
     }
+
     @Test
     @DisplayName("Connection을 제거한다.")
     void unbindResource() throws SQLException {
@@ -31,7 +32,6 @@ class TransactionSynchronizationManagerTest {
         TransactionSynchronizationManager.bindResource(dataSource, existing);
 
         Connection connection = TransactionSynchronizationManager.unbindResource(dataSource);
-
 
         assertThat(TransactionSynchronizationManager.getResource(dataSource)).isNull();
     }
