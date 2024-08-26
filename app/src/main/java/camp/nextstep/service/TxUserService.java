@@ -1,6 +1,7 @@
 package camp.nextstep.service;
 
 import camp.nextstep.domain.User;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import camp.nextstep.jdbc.datasource.TransactionalManager;
 import camp.nextstep.transaction.support.TransactionStatus;
 import com.interface21.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class TxUserService implements UserService {
         } catch (Exception e){
             transactionalManager.rollback(transactionStatus, dataSource);
             throw e;
+        } finally {
+            DataSourceUtils.releaseConnection(dataSource);
+
         }
     }
 }
