@@ -30,7 +30,7 @@ public abstract class DataSourceUtils {
 
     public static void releaseConnection(DataSource dataSource) {
         Connection current = TransactionSynchronizationManager.getResource(dataSource);
-        if (current != null) {
+        if (current == null) {
             return;
         }
 
