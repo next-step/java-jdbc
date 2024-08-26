@@ -68,8 +68,8 @@ https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframe
 
 1. [x] Transaction 동기화를 위한 Transactional Synchronization 적용하기
 2. [x] 트랜잭션 서비스 추상화 하기
-3. [] 트랜잭션 테스트가 실제로 통과하는지 확인하기
-   - [] 실제로 쓰레드 여러개 띄어서 트랜잭션 독립적인지 확인
+3. [x] 트랜잭션 테스트가 실제로 통과하는지 확인하기
+   - [x] 실제로 쓰레드 여러개 띄어서 트랜잭션 독립적인지 확인
 
 
 키워드 정리
