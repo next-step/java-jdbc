@@ -42,4 +42,23 @@
         로 구현을 실패했습니다.
     - generic class로 생성하였습니다.
 
-   
+
+
+## 3단계 요구사항
+
+
+1. [x] Transaction 경계 설정하기
+   - 한 트랜잭션으로 묶으려면, 동일한 Connection 객체를 사용한다.
+
+
+
+기능 정리
+- Transaction 이란 논리적 기능을 수행하기 위한 작업 단위로 Commit 혹은 Rollback으로 상태가 완료된다.
+- 이를 위해, Connection이라는 객체를 동일하게 유지해야하는데, 이때, TransactionalManager의 리소스 동기화 역할이 필요하다.
+- 비즈니스 로직 레벨(Service)에서 TransactoinalManager 없이는, 데이터 접근 로직(Connection 객체)가 섞이게 된다.
+-   https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/jdbc/datasource/DataSourceTransactionManager.html
+
+
+4단계의 resource 
+
+https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html
