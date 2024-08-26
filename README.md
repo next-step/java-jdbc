@@ -18,3 +18,10 @@
 ## 학습 테스트
 1. [ConnectionPool](study/src/test/java/connectionpool)
 2. [Transaction](study/src/test/java/transaction)
+
+---
+
+### 🚀 1단계 - JDBC 라이브러리 구현하기
+- [1단계_요구사항.md](1단계_요구사항.md)
+### 🚀 2단계 - 리팩터링
+- [2단계_요구사항.md]()
