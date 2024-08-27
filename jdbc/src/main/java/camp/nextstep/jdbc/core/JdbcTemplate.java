@@ -1,5 +1,6 @@
 package camp.nextstep.jdbc.core;
 
+import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.jdbc.IncorrectResultSizeDataAccessException;
 import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import java.sql.PreparedStatement;
@@ -34,7 +35,7 @@ public class JdbcTemplate {
       setQueryParameters(preparedStatement, args);
       return extractResults(rowMapper, preparedStatement);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DataAccessException(e);
     }
   }
 
@@ -44,13 +45,14 @@ public class JdbcTemplate {
       setQueryParameters(preparedStatement, args);
       return preparedStatement.executeUpdate();
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DataAccessException(e);
     }
   }
 
   private void setQueryParameters(PreparedStatement preparedStatement, Object[] args) throws SQLException {
     for (int i = 0; i < args.length; i++) {
-      PreparedStatementParameterBinder.bind(preparedStatement, i + 1, args[i]);
+      PreparedStatementSetter preparedStatementSetter = PreparedStatementSetter.from(args[i].getClass());
+      preparedStatementSetter.set(preparedStatement, i + 1, args[i]);
     }
   }
 

@@ -25,8 +25,9 @@ class ResultSetColumnReaderTest {
   @DisplayName("String 타입을 읽어온다")
   void testMapString() throws SQLException {
     when(resultSet.getString("name")).thenReturn("test");
+    final ResultSetColumnReader reader = ResultSetColumnReader.from(String.class);
 
-    Object result = ResultSetColumnReader.get(resultSet, "name", String.class);
+    final Object result = reader.read(resultSet, "name");
 
     assertAll(
         () -> assertThat(result).isEqualTo("test"),
@@ -38,8 +39,9 @@ class ResultSetColumnReaderTest {
   @DisplayName("Long 타입을 읽어온다")
   void testMapLong() throws SQLException {
     when(resultSet.getLong("id")).thenReturn(100L);
+    final ResultSetColumnReader reader = ResultSetColumnReader.from(Long.class);
 
-    Object result = ResultSetColumnReader.get(resultSet, "id", Long.class);
+    final Object result = reader.read(resultSet, "id");
 
 
     assertAll(
@@ -52,8 +54,9 @@ class ResultSetColumnReaderTest {
   @DisplayName("Integer 타입을 읽어온다")
   void testMapInteger() throws SQLException {
     when(resultSet.getInt("age")).thenReturn(42);
+    final ResultSetColumnReader reader = ResultSetColumnReader.from(Integer.class);
 
-    Object result = ResultSetColumnReader.get(resultSet, "age", Integer.class);
+    final Object result = reader.read(resultSet, "age");
 
     assertAll(
         () -> assertThat(result).isEqualTo(42),
@@ -65,8 +68,9 @@ class ResultSetColumnReaderTest {
   @DisplayName("Boolean 타입을 읽어온다")
   void testMapBoolean() throws SQLException {
     when(resultSet.getBoolean("is_active")).thenReturn(true);
+    final ResultSetColumnReader reader = ResultSetColumnReader.from(Boolean.class);
 
-    Object result = ResultSetColumnReader.get(resultSet, "is_active", Boolean.class);
+    final Object result = reader.read(resultSet, "is_active");
 
     assertAll(
         () -> assertThat(result).isEqualTo(true),
@@ -79,8 +83,9 @@ class ResultSetColumnReaderTest {
   void testMapObject() throws SQLException {
     Object obj = new Object();
     when(resultSet.getObject("data")).thenReturn(obj);
+    final ResultSetColumnReader reader = ResultSetColumnReader.from(Object.class);
 
-    Object result = ResultSetColumnReader.get(resultSet, "data", Object.class);
+    final Object result = reader.read(resultSet, "data");
 
     assertAll(
         () -> assertThat(result).isEqualTo(obj),
@@ -92,7 +97,7 @@ class ResultSetColumnReaderTest {
   @DisplayName("존재하지 않는 타입이라면 에러를 던진다")
   void testUnknownTypeThrowsException() {
     assertThrows(IllegalArgumentException.class, () -> {
-      ResultSetColumnReader.get(resultSet, "unknown", MyClass.class);
+      ResultSetColumnReader.from(MyClass.class);
     });
   }
 

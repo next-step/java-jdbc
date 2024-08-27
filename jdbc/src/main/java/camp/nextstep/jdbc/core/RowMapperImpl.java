@@ -1,5 +1,6 @@
 package camp.nextstep.jdbc.core;
 
+import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.jdbc.DataMappingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +22,7 @@ public class RowMapperImpl<T> implements RowMapper<T> {
       setFieldValues(instance, clazz.getDeclaredFields(), resultSet);
       return instance;
     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
+      throw new DataAccessException(e);
     }
   }
 
@@ -37,7 +38,8 @@ public class RowMapperImpl<T> implements RowMapper<T> {
 
   private void setFieldValue(Object instance, Field field, ResultSet resultSet) throws IllegalAccessException, SQLException {
     field.setAccessible(true);
-    final Object value = ResultSetColumnReader.get(resultSet, field.getName(), field.getType());
+    ResultSetColumnReader reader = ResultSetColumnReader.from(field.getType());
+    final Object value = reader.read(resultSet, field.getName());
     field.set(instance, value);
   }
 }

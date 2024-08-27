@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+import camp.nextstep.dao.DataAccessException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class RowMapperImplTest {
   void testMapRowThrowsRuntimeException() throws Exception {
     doThrow(new SQLException("Column not found")).when(resultSet).getString("name");
 
-    RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+    RuntimeException exception = assertThrows(DataAccessException.class, () -> {
       rowMapper.mapRow(resultSet);
     });
 
