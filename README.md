@@ -42,7 +42,7 @@
         로 구현을 실패했습니다.
     - generic class로 생성하였습니다.
 
-
+   
 
 ## 3단계 요구사항
 
@@ -62,3 +62,24 @@
 4단계의 resource 
 
 https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronizationManager.html
+
+
+## 4단계 요구사항
+
+1. [x] Transaction 동기화를 위한 Transactional Synchronization 적용하기
+2. [x] 트랜잭션 서비스 추상화 하기
+3. [x] 트랜잭션 테스트가 실제로 통과하는지 확인하기
+   - [x] 실제로 쓰레드 여러개 띄어서 트랜잭션 독립적인지 확인
+
+
+키워드 정리
+- 로컬 트랜잭션
+  - 하나의 DB 커넥션 안에서 만드는 트랜잭션을 로컬 트랜잭션이라고 한다.
+- 글로벌 트랜잭션
+  - 별도의 트랜잭션 관리자를 통해서 트랜잭션을 관리하는 글로벌 트랜잭션 방식도 있다.
+- JTA 
+  - Java Transaction API를 사용해서 여러 리소스에 대한 트랜잭션을 종합적으로 제어할 수 있따.
+    -  2PC 를 사용할 때, 글로벌 트랜잭션을 사용하게되는데, 락이오래 걸린다;;
+    -  사용 거의 안한다. 
+    -  
+

@@ -6,16 +6,9 @@ import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.jdbc.core.RowMapper;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
-import org.h2.result.Row;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 
 @Repository
 public class UserDao {
@@ -24,7 +17,7 @@ public class UserDao {
 
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<User> genericRowMapper;
-    
+
     @Autowired
     public UserDao(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -39,7 +32,8 @@ public class UserDao {
 
     public void update(final User user) {
         final var sql = "UPDATE users SET account = ?, password = ?, email = ? WHERE id = ?";
-        jdbcTemplate.execute(sql, user.getAccount(), user.getPassword(), user.getEmail(), user.getId());
+        jdbcTemplate.execute(sql, user.getAccount(), user.getPassword(), user.getEmail(),
+            user.getId());
     }
 
     public List<User> findAll() {

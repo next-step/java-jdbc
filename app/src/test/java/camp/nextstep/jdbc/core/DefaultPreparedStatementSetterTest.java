@@ -9,11 +9,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import javax.xml.crypto.Data;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class DefaultPreparedStatementSetterTest {
+
     private final DataSource dataSource = mock(DataSource.class);
     private final Connection connection = mock(Connection.class);
 

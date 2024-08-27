@@ -1,5 +1,6 @@
 package camp.nextstep.controller;
 
+import camp.nextstep.service.TxUserService;
 import camp.nextstep.service.UserService;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Controller;
@@ -17,18 +18,18 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    private final UserService userService;
+    private final UserService txUserService;
 
     @Autowired
-    public UserController(final UserService userService) {
-        this.userService = userService;
+    public UserController(final TxUserService txUserService) {
+        this.txUserService = txUserService;
     }
 
     @RequestMapping(value = "/api/user/{id}", method = RequestMethod.GET)
     public ModelAndView show(@PathVariable("id") final long id) {
         log.debug("user id : {}", id);
 
-        final var user = userService.findById(id);
+        final var user = txUserService.findById(id);
 
         final var modelAndView = new ModelAndView(new JsonView());
         modelAndView.addObject("user", user);
@@ -39,7 +40,7 @@ public class UserController {
     public ModelAndView show(@RequestParam("account") final String account) {
         log.debug("user account : {}", account);
 
-        final var user = userService.findByAccount(account);
+        final var user = txUserService.findByAccount(account);
 
         final var modelAndView = new ModelAndView(new JsonView());
         modelAndView.addObject("user", user);
