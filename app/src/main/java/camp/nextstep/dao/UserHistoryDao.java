@@ -28,14 +28,12 @@ public class UserHistoryDao {
         this.dataSource = null;
     }
 
-    public void log(final UserHistory userHistory) {
+    public void log(Connection connection, final UserHistory userHistory) {
         final var sql = "insert into user_history (user_id, account, password, email, created_at, created_by) values (?, ?, ?, ?, ?, ?)";
 
-        Connection conn = null;
         PreparedStatement pstmt = null;
         try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
+            pstmt = connection.prepareStatement(sql);
 
             log.debug("query : {}", sql);
 
@@ -57,8 +55,8 @@ public class UserHistoryDao {
             } catch (SQLException ignored) {}
 
             try {
-                if (conn != null) {
-                    conn.close();
+                if (connection != null) {
+                    connection.close();
                 }
             } catch (SQLException ignored) {}
         }

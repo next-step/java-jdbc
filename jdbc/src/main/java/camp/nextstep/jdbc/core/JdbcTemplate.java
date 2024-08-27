@@ -32,6 +32,15 @@ public class JdbcTemplate {
         }
     }
 
+    public void update(final Connection connection, final String sql, Object... args) {
+        try (final PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            setParams(args, pstmt);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new JdbcException(e.getMessage(), e);
+        }
+    }
+
     public <T> T execurteQueryForObject(final String sql, final RowMapper<T> rowMapper, final Object... args) {
         final List<T> results = executeQuery(sql, rowMapper, args);
         if (results.size() != 1) {
