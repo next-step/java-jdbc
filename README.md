@@ -32,3 +32,8 @@
 - [x] Unchecked Exception을 사용해 예외 처리를 간결하게 구현한다.
 - [x] RowMapper 인터페이스를 제네릭으로 사용한다.
 - [x] PreparedStatementSetter 인터페이스를 가변인자로 사용한다.
+
+## 3단계 - Transaction 적용하기
+- [ ] UserService에서 예외가 발생시에 롤백을 한다.
+- [ ] Connection 객체의 setAutoCommit(false) 메서드를 호출하여 commit 실행을 제한한다.
+- [ ] userDao와 userHistoryDao를 한 트랜잭션으로 묶으려면 동일한 Connection 객체를 사용하도록 변경한다.
