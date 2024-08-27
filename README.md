@@ -18,3 +18,13 @@
 ## 학습 테스트
 1. [ConnectionPool](study/src/test/java/connectionpool)
 2. [Transaction](study/src/test/java/transaction)
+
+## 요구사항 정리
+### 🚀 1단계 - JDBC 라이브러리 구현하기
+
+- [ ] JDBC 라이브러리를 구현
+   - [ ] SQL 쿼리를 실행하는 기능 구현
+   - [ ] SQL 쿼리에 전달할 인자를 바인딩하는 기능 구현
+   - [ ] SELECT 구문 실행 결과를 POJO로 변환하는 기능 구현
+
+
