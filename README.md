@@ -38,3 +38,8 @@
 - [x] Connection 객체의 setAutoCommit(false) 메서드를 호출하여 commit 실행을 제한한다.
 - [x] userDao와 userHistoryDao를 한 트랜잭션으로 묶으려면 동일한 Connection 객체를 사용하도록 변경한다.
 - [x] 실제 패스워드가 변경되는지 testChangePassword() 테스트를 통과하기
+
+## 4단계 - 트랜잭션 동기화 구현하기
+- [ ] Transaction synchronization 적용하기
+- [ ] 트랜잭션 서비스 추상화하기
+- [ ] testTransactionRollback() 테스트를 통과하기
