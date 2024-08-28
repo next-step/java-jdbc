@@ -40,8 +40,7 @@ public class JdbcTemplate {
   }
 
   public int update(String sql, Object... args) {
-    try (final PreparedStatement preparedStatement =
-        DataSourceUtils.getConnection(dataSource).prepareStatement(sql)) {
+    try (final PreparedStatement preparedStatement = DataSourceUtils.getConnection(dataSource).prepareStatement(sql)) {
       setQueryParameters(preparedStatement, args);
       return preparedStatement.executeUpdate();
     } catch (SQLException e) {
