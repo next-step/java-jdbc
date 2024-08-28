@@ -41,5 +41,5 @@
 
 ## 4단계 - 트랜잭션 동기화 구현하기
 - [x] Transaction synchronization 적용하기
-- [ ] 트랜잭션 서비스 추상화하기
+- [x] 트랜잭션 서비스 추상화하기
 - [ ] testTransactionRollback() 테스트를 통과하기
