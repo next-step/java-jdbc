@@ -45,7 +45,7 @@ public class Transaction implements AutoCloseable {
   public void close() {
     try {
       if (!committed) {
-        rollback();  // If not committed, rollback on close
+        rollback();
       }
     } finally {
       DataSourceUtils.releaseConnection(dataSource);
