@@ -5,8 +5,11 @@ import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
+import camp.nextstep.transaction.support.TransactionSynchronizationManager;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Service;
+import org.h2.mvstore.DataUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -39,10 +42,9 @@ public class UserService {
     }
 
     public void changePassword(final long id, final String newPassword, final String createBy) throws SQLException {
-        Connection connection = null;
+        Connection connection = DataSourceUtils.getConnection(dataSource);
+        connection.setAutoCommit(false);
         try {
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
 
             final var user = findById(id);
             user.changePassword(newPassword);
@@ -54,7 +56,7 @@ public class UserService {
             connection.rollback();
             throw new DataAccessException(e);
         } finally {
-            connection.close();
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
     }
 }

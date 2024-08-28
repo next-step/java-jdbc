@@ -40,6 +40,6 @@
 - [x] 실제 패스워드가 변경되는지 testChangePassword() 테스트를 통과하기
 
 ## 4단계 - 트랜잭션 동기화 구현하기
-- [ ] Transaction synchronization 적용하기
+- [x] Transaction synchronization 적용하기
 - [ ] 트랜잭션 서비스 추상화하기
 - [ ] testTransactionRollback() 테스트를 통과하기
