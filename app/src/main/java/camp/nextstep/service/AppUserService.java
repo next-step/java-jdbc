@@ -4,11 +4,13 @@ import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.domain.UserHistory;
+import com.interface21.beans.factory.annotation.Autowired;
 
 public class AppUserService implements UserService {
     private final UserDao userDao;
     private final UserHistoryDao userHistoryDao;
 
+    @Autowired
     public AppUserService(final UserDao userDao, final UserHistoryDao userHistoryDao) {
         this.userDao = userDao;
         this.userHistoryDao = userHistoryDao;

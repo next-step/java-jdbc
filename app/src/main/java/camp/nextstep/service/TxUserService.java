@@ -1,12 +1,22 @@
 package camp.nextstep.service;
 
 import camp.nextstep.domain.User;
+import camp.nextstep.transaction.support.TransactionManager;
+import camp.nextstep.transaction.support.TransactionTemplate;
+import com.interface21.beans.factory.annotation.Autowired;
+
+import javax.sql.DataSource;
 
 public class TxUserService implements UserService {
     private final UserService userService;
+    private final TransactionTemplate transactionTemplate;
 
-    public TxUserService(final UserService userService) {
+    @Autowired
+    public TxUserService(final UserService userService, DataSource dataSource) {
         this.userService = userService;
+
+        TransactionManager transactionManager = new TransactionManager(dataSource);
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     @Override
@@ -26,6 +36,9 @@ public class TxUserService implements UserService {
 
     @Override
     public void changePassword(final long id, final String newPassword, final String createdBy) {
-        userService.changePassword(id, newPassword, createdBy);
+        transactionTemplate.execute(ignored -> {
+            userService.changePassword(id, newPassword, createdBy);
+            return null;
+        });
     }
 }

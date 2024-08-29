@@ -4,16 +4,12 @@ import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
-import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
-
-import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,11 +31,11 @@ class UserServiceTest {
     }
 
     @Test
-    void testChangePassword() throws SQLException {
+    void testChangePassword() {
         final var userHistoryDao = new UserHistoryDao(jdbcTemplate);
 
         final var appUserService = new AppUserService(userDao, userHistoryDao);
-        final var userService = new TxUserService(appUserService);
+        final var userService = new TxUserService(appUserService, dataSource);
 
         final var newPassword = "qqqqq";
         final var createBy = "gugu";
@@ -57,7 +53,7 @@ class UserServiceTest {
         // 애플리케이션 서비스
         final var appUserService = new AppUserService(userDao, userHistoryDao);
         // 트랜잭션 서비스 추상화
-        final var userService = new TxUserService(appUserService);
+        final var userService = new TxUserService(appUserService, dataSource);
 
         final var newPassword = "newPassword";
         final var createdBy = "gugu";
