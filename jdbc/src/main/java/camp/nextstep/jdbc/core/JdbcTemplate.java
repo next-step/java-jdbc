@@ -21,6 +21,17 @@ public class JdbcTemplate {
     this.dataSource = dataSource;
   }
 
+  public void update(String sql, List<?> params) {
+  }
+
+  public void insert() {
+    // todo
+  }
+
+  public <T> T selectAll(String sql) {
+    return null;
+  }
+
   public <T> List<T> selectAll(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
 
     try (Connection conn = dataSource.getConnection();
