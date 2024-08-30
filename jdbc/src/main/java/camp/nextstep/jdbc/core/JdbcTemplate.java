@@ -1,6 +1,7 @@
 package camp.nextstep.jdbc.core;
 
 import camp.nextstep.exception.JdbcException;
+import camp.nextstep.jdbc.datasource.DataSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class JdbcTemplate {
     }
 
     public void update(final String sql, Object... args) {
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = DataSourceUtils.getConnection(dataSource);
              final PreparedStatement pstmt = connection.prepareStatement(sql)) {
             setParams(args, pstmt);
             pstmt.executeUpdate();
