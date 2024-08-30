@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,15 @@ public class JdbcTemplate {
     this.dataSource = dataSource;
   }
 
-  public void update(String sql, List<?> params) {
+  public int update(String sql, List<?> params) {
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+      setParameters(preparedStatement, params);
+      return preparedStatement.executeUpdate();
+    } catch (SQLException e) {
+      log.error(e.getMessage(), e);
+      throw new RuntimeException(e);
+    }
   }
 
   public void insert() {
@@ -33,31 +42,27 @@ public class JdbcTemplate {
   }
 
   public <T> List<T> selectAll(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
-
     try (Connection conn = dataSource.getConnection();
-        PreparedStatement pstmt = conn.prepareStatement(sql)) {
-      setUpParameters(pstmt, params);
-      return getMultipleResults(resultSetHandler, pstmt);
+        PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+
+      setParameters(preparedStatement, params);
+
+      try (ResultSet resultSet = preparedStatement.executeQuery()) {
+        List<T> results = new ArrayList<>();
+        while (resultSet.next()) {
+          results.add(resultSetHandler.handle(resultSet));
+        }
+        return results;
+      }
     } catch (SQLException e) {
       log.error(e.getMessage(), e);
       throw new RuntimeException(e);
     }
   }
 
-  private <T> List<T> getMultipleResults(ResultSetHandler<T> resultSetHandler,
-      PreparedStatement pstmt) throws SQLException {
-    try (ResultSet rs = pstmt.executeQuery()) {
-      List<T> results = new ArrayList<>();
-      while (rs.next()) {
-        results.add(resultSetHandler.handle(rs));
-      }
-      return results;
-    }
-  }
-
-  private void setUpParameters(PreparedStatement pstmt, List<?> params) throws SQLException {
+  private void setParameters(PreparedStatement preparedStatement, List<?> params) throws SQLException {
     for (int i = 0; i < params.size(); i++) {
-      pstmt.setObject(i + 1, params.get(i));
+      preparedStatement.setObject(i + 1, params.get(i));
     }
   }
 }
