@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -33,10 +34,19 @@ public class JdbcTemplate {
     }
   }
 
-  public void insert() {
-    // todo
+  public long insert(String sql, List<?> params) {
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+      setParameters(pstmt, params);
+      pstmt.executeUpdate();
+      try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+          return generatedKeys.getLong(1);
+      }
+    } catch (SQLException e) {
+      log.error(e.getMessage(), e);
+      throw new RuntimeException(e);
+    }
   }
-
   public <T> T selectAll(String sql) {
     return null;
   }
