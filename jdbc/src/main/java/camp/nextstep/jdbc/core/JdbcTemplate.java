@@ -6,10 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,19 +31,6 @@ public class JdbcTemplate {
     } catch (SQLException e) {
       log.error(e.getMessage(), e);
       throw new DataAccessException("update 쿼리 실행 중 오류가 발생했습니다.", e);
-    }
-  }
-
-  public long insert(String sql, List<?> params) {
-    try (Connection conn = dataSource.getConnection();
-        PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-      setParameters(pstmt, params);
-      pstmt.executeUpdate();
-      try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-        return generatedKeys.getLong(1);
-      }
-    } catch (SQLException e) {
-      throw new DataAccessException("insert 쿼리 실행 중 오류가 발생했습니다.", e);
     }
   }
 
