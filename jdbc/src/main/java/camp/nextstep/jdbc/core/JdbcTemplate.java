@@ -1,5 +1,7 @@
 package camp.nextstep.jdbc.core;
 
+import camp.nextstep.dao.DataAccessException;
+import camp.nextstep.dao.EmptyResultDataAccessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,7 +32,7 @@ public class JdbcTemplate {
       return preparedStatement.executeUpdate();
     } catch (SQLException e) {
       log.error(e.getMessage(), e);
-      throw new RuntimeException(e);
+      throw new DataAccessException("update 쿼리 실행 중 오류가 발생했습니다.", e);
     }
   }
 
@@ -43,7 +45,7 @@ public class JdbcTemplate {
         return generatedKeys.getLong(1);
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DataAccessException("insert 쿼리 실행 중 오류가 발생했습니다.", e);
     }
   }
 
@@ -55,11 +57,11 @@ public class JdbcTemplate {
         if (resultSet.next()) {
           return resultSetHandler.handle(resultSet);
         } else {
-          throw new RuntimeException("쿼리 결과가 없습니다.");
+          throw new EmptyResultDataAccessException("쿼리 결과가 없습니다.");
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DataAccessException("단일 객체 조회 쿼리 실행 중 오류가 발생했습니다.", e);
     }
   }
 
@@ -78,7 +80,7 @@ public class JdbcTemplate {
         return results;
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DataAccessException("리스트 조회 쿼리 실행 중 오류가 발생했습니다.", e);
     }
   }
 
