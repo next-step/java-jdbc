@@ -2,6 +2,7 @@ package camp.nextstep.dao;
 
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
+import camp.nextstep.jdbc.core.UpdateJdbcTemplate;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
 import java.sql.ResultSet;
@@ -17,10 +18,12 @@ public class UserDao {
 
     private static final Logger log = LoggerFactory.getLogger(UserDao.class);
     private final JdbcTemplate jdbcTemplate;
+    private final UpdateJdbcTemplate updateJdbcTemplate;
 
     @Autowired
-    public UserDao(final JdbcTemplate jdbcTemplate) {
+    public UserDao(final JdbcTemplate jdbcTemplate, final UpdateJdbcTemplate updateJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.updateJdbcTemplate = updateJdbcTemplate;
     }
 
     public void insert(final User user) {
