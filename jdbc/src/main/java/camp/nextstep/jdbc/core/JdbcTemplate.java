@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +24,10 @@ public class JdbcTemplate {
     this.dataSource = dataSource;
   }
 
-  public int update(String sql, List<?> params) {
+  public int update(String sql, Object... params) {
     try (Connection conn = dataSource.getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-      setParameters(preparedStatement, params);
+      setParameters(preparedStatement, Arrays.asList(params));
       return preparedStatement.executeUpdate();
     } catch (SQLException e) {
       log.error(e.getMessage(), e);
@@ -34,10 +35,10 @@ public class JdbcTemplate {
     }
   }
 
-  public <T> T queryForObject(String sql, List<?> params, ResultSetHandler<T> resultSetHandler) {
+  public <T> T queryForObject(String sql, ResultSetHandler<T> resultSetHandler, Object... params) {
     try (Connection conn = dataSource.getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-      setParameters(preparedStatement, params);
+      setParameters(preparedStatement, Arrays.asList(params));
       try (ResultSet resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
           return resultSetHandler.handle(resultSet);
@@ -50,12 +51,12 @@ public class JdbcTemplate {
     }
   }
 
-  public <T> List<T> queryForList(String sql, List<?> params,
-      ResultSetHandler<T> resultSetHandler) {
+  public <T> List<T> queryForList(String sql,
+      ResultSetHandler<T> resultSetHandler,Object... params) {
     try (Connection conn = dataSource.getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
-      setParameters(preparedStatement, params);
+      setParameters(preparedStatement, Arrays.asList(params));
 
       try (ResultSet resultSet = preparedStatement.executeQuery()) {
         List<T> results = new ArrayList<>();
