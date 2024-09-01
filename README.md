@@ -20,11 +20,11 @@
 2. [Transaction](study/src/test/java/transaction)
 
 ## 요구사항 정리
-### 🚀 1단계 - JDBC 라이브러리 구현하기
+### 🚀 3단계 - Transaction 적용하기
 
-- [x] JDBC 라이브러리를 구현
-   - [x] SQL 쿼리를 실행하는 기능 구현
-   - [x] SQL 쿼리에 전달할 인자를 바인딩하는 기능 구현
+- [x] 트랜잭션을 적용할 수 있는 @Transactional 어노테이션을 구현한다.
+   - [x] 비즈니스 로직이 끝나면 커밋또는 롤백을 실행한다.
+   - [x] 각각 실행되던 connection객체를 @transactional이 붙은 메서드에서 하나로 관리하자
    - [x] SELECT 구문 실행 결과를 자바 객체로 변환하는 기능 구현
 
 
