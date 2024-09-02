@@ -19,8 +19,8 @@ public class JdbcTemplate {
   private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
 
   private final DataSource dataSource;
+  private final ThreadLocal<Connection> transactionConnectionHolder = new ThreadLocal<>();
 
-  private Connection transactionConnection;
 
   public JdbcTemplate(final DataSource dataSource) {
     this.dataSource = dataSource;
@@ -80,26 +80,17 @@ public class JdbcTemplate {
   }
 
 
-  private Connection getConnection() throws SQLException {
-
-    if(transactionConnection != null) {
-      return transactionConnection;
-    }
-    return dataSource.getConnection();
-  }
-
-
   public void startTransaction() throws SQLException {
-    if (transactionConnection == null) {
-      transactionConnection = dataSource.getConnection();
-      transactionConnection.setAutoCommit(false);
-    }
+    Connection conn = dataSource.getConnection();
+    conn.setAutoCommit(false);
+    transactionConnectionHolder.set(conn);
   }
 
   public void commit() throws SQLException {
-    if (transactionConnection != null) {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
       try {
-        transactionConnection.commit();
+        conn.commit();
       } finally {
         closeTransactionConnection();
       }
@@ -107,9 +98,10 @@ public class JdbcTemplate {
   }
 
   public void rollback() throws SQLException {
-    if (transactionConnection != null) {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
       try {
-        transactionConnection.rollback();
+        conn.rollback();
       } finally {
         closeTransactionConnection();
       }
@@ -117,12 +109,22 @@ public class JdbcTemplate {
   }
 
   private void closeTransactionConnection() throws SQLException {
-    if (transactionConnection != null) {
-      transactionConnection.setAutoCommit(true);
-      transactionConnection.close();
-      transactionConnection = null;
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
+      conn.setAutoCommit(true);
+      conn.close();
+      transactionConnectionHolder.remove();
     }
   }
+
+  private Connection getConnection() throws SQLException {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
+      return conn;
+    }
+    return dataSource.getConnection();
+  }
+
 
 }
 
