@@ -20,12 +20,14 @@ public class JdbcTemplate {
 
   private final DataSource dataSource;
 
+  private Connection transactionConnection;
+
   public JdbcTemplate(final DataSource dataSource) {
     this.dataSource = dataSource;
   }
 
   public int update(String sql, Object... params) {
-    try (Connection conn = dataSource.getConnection();
+    try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
       setParameters(preparedStatement, Arrays.asList(params));
       return preparedStatement.executeUpdate();
@@ -36,7 +38,7 @@ public class JdbcTemplate {
   }
 
   public <T> T queryForObject(String sql, ResultSetHandler<T> resultSetHandler, Object... params) {
-    try (Connection conn = dataSource.getConnection();
+    try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
       setParameters(preparedStatement, Arrays.asList(params));
       try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -53,7 +55,7 @@ public class JdbcTemplate {
 
   public <T> List<T> queryForList(String sql,
       ResultSetHandler<T> resultSetHandler,Object... params) {
-    try (Connection conn = dataSource.getConnection();
+    try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
       setParameters(preparedStatement, Arrays.asList(params));
@@ -76,5 +78,51 @@ public class JdbcTemplate {
       preparedStatement.setObject(i + 1, params.get(i));
     }
   }
+
+
+  private Connection getConnection() throws SQLException {
+
+    if(transactionConnection != null) {
+      return transactionConnection;
+    }
+    return dataSource.getConnection();
+  }
+
+
+  public void startTransaction() throws SQLException {
+    if (transactionConnection == null) {
+      transactionConnection = dataSource.getConnection();
+      transactionConnection.setAutoCommit(false);
+    }
+  }
+
+  public void commit() throws SQLException {
+    if (transactionConnection != null) {
+      try {
+        transactionConnection.commit();
+      } finally {
+        closeTransactionConnection();
+      }
+    }
+  }
+
+  public void rollback() throws SQLException {
+    if (transactionConnection != null) {
+      try {
+        transactionConnection.rollback();
+      } finally {
+        closeTransactionConnection();
+      }
+    }
+  }
+
+  private void closeTransactionConnection() throws SQLException {
+    if (transactionConnection != null) {
+      transactionConnection.setAutoCommit(true);
+      transactionConnection.close();
+      transactionConnection = null;
+    }
+  }
+
 }
 
