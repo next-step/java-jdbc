@@ -64,7 +64,7 @@ public class JdbcTemplate {
   }
 
   public <T> List<T> queryForList(String sql,
-      ResultSetHandler<T> resultSetHandler,Object... params) {
+      ResultSetHandler<T> resultSetHandler, Object... params) {
     try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
@@ -90,7 +90,7 @@ public class JdbcTemplate {
   }
 
 
-  public void startTransaction() throws SQLException {
+  public void begin() throws SQLException {
     Connection conn = dataSource.getConnection();
     conn.setAutoCommit(false);
     transactionConnectionHolder.set(conn);
@@ -134,7 +134,4 @@ public class JdbcTemplate {
     }
     return dataSource.getConnection();
   }
-
-
 }
-

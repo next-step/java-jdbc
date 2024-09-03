@@ -1,6 +1,5 @@
 package camp.nextstep.service;
 
-import camp.nextstep.config.MyConfiguration;
 import camp.nextstep.dao.DataAccessException;
 import camp.nextstep.dao.UserDao;
 import camp.nextstep.dao.UserHistoryDao;
@@ -66,6 +65,5 @@ public class UserService {
     }
 
   }
-
 
 }
