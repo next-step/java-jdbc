@@ -7,6 +7,8 @@ import camp.nextstep.dao.UserHistoryDao;
 import camp.nextstep.domain.User;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import camp.nextstep.support.jdbc.init.DatabasePopulatorUtils;
+import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -16,13 +18,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class UserServiceTest {
 
+    private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
     private UserDao userDao;
 
     @BeforeEach
     void setUp() {
         final var myConfiguration = new MyConfiguration();
-        final var dataSource = myConfiguration.dataSource();
+        this.dataSource = myConfiguration.dataSource();
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.userDao = new UserDao(jdbcTemplate);
 
@@ -32,9 +35,9 @@ class UserServiceTest {
     }
 
     @Test
-    void testChangePassword() {
+    void testChangePassword() throws SQLException {
         final var userHistoryDao = new UserHistoryDao(jdbcTemplate);
-        final var userService = new UserService(userDao, userHistoryDao);
+        final var userService = new UserService(userDao, userHistoryDao, dataSource);
 
         final var newPassword = "qqqqq";
         final var createBy = "gugu";
@@ -46,10 +49,11 @@ class UserServiceTest {
     }
 
     @Test
-    void testTransactionRollback() {
-        // 트랜잭션 롤백 테스트를 위해 mock으로 교체
+    void testTransactionRollback() throws SQLException {
+
+        // 트랜잭션 롤백 테스트를 위해 mock으로 교체 후 의존성 주입
         final var userHistoryDao = new MockUserHistoryDao(jdbcTemplate);
-        final var userService = new UserService(userDao, userHistoryDao);
+        final var userService = new UserService(userDao, userHistoryDao, dataSource);
 
         final var newPassword = "newPassword";
         final var createBy = "gugu";
@@ -59,6 +63,6 @@ class UserServiceTest {
 
         final var actual = userService.findById(1L);
 
-        assertThat(actual.getPassword()).isNotEqualTo(newPassword);
+       assertThat(actual.getPassword()).isNotEqualTo(newPassword);
     }
 }
