@@ -37,6 +37,16 @@ public class JdbcTemplate {
     }
   }
 
+  public int update(Connection connection, String sql, Object... params) {
+    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+      setParameters(preparedStatement, Arrays.asList(params));
+      return preparedStatement.executeUpdate();
+    } catch (SQLException e) {
+      log.error(e.getMessage(), e);
+      throw new DataAccessException("update 쿼리 실행 중 오류가 발생했습니다.", e);
+    }
+  }
+
   public <T> T queryForObject(String sql, ResultSetHandler<T> resultSetHandler, Object... params) {
     try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
