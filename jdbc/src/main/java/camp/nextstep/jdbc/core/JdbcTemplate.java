@@ -19,13 +19,15 @@ public class JdbcTemplate {
   private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
 
   private final DataSource dataSource;
+  private final ThreadLocal<Connection> transactionConnectionHolder = new ThreadLocal<>();
+
 
   public JdbcTemplate(final DataSource dataSource) {
     this.dataSource = dataSource;
   }
 
   public int update(String sql, Object... params) {
-    try (Connection conn = dataSource.getConnection();
+    try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
       setParameters(preparedStatement, Arrays.asList(params));
       return preparedStatement.executeUpdate();
@@ -35,8 +37,18 @@ public class JdbcTemplate {
     }
   }
 
+  public int update(Connection connection, String sql, Object... params) {
+    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+      setParameters(preparedStatement, Arrays.asList(params));
+      return preparedStatement.executeUpdate();
+    } catch (SQLException e) {
+      log.error(e.getMessage(), e);
+      throw new DataAccessException("update 쿼리 실행 중 오류가 발생했습니다.", e);
+    }
+  }
+
   public <T> T queryForObject(String sql, ResultSetHandler<T> resultSetHandler, Object... params) {
-    try (Connection conn = dataSource.getConnection();
+    try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
       setParameters(preparedStatement, Arrays.asList(params));
       try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -52,8 +64,8 @@ public class JdbcTemplate {
   }
 
   public <T> List<T> queryForList(String sql,
-      ResultSetHandler<T> resultSetHandler,Object... params) {
-    try (Connection conn = dataSource.getConnection();
+      ResultSetHandler<T> resultSetHandler, Object... params) {
+    try (Connection conn = getConnection();
         PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
 
       setParameters(preparedStatement, Arrays.asList(params));
@@ -76,5 +88,50 @@ public class JdbcTemplate {
       preparedStatement.setObject(i + 1, params.get(i));
     }
   }
-}
 
+
+  public void begin() throws SQLException {
+    Connection conn = dataSource.getConnection();
+    conn.setAutoCommit(false);
+    transactionConnectionHolder.set(conn);
+  }
+
+  public void commit() throws SQLException {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
+      try {
+        conn.commit();
+      } finally {
+        closeTransactionConnection();
+      }
+    }
+  }
+
+  public void rollback() throws SQLException {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
+      try {
+        conn.rollback();
+      } finally {
+        closeTransactionConnection();
+      }
+    }
+  }
+
+  private void closeTransactionConnection() throws SQLException {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
+      conn.setAutoCommit(true);
+      conn.close();
+      transactionConnectionHolder.remove();
+    }
+  }
+
+  private Connection getConnection() throws SQLException {
+    Connection conn = transactionConnectionHolder.get();
+    if (conn != null) {
+      return conn;
+    }
+    return dataSource.getConnection();
+  }
+}

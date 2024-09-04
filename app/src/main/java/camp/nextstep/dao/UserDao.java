@@ -5,6 +5,7 @@ import camp.nextstep.jdbc.core.DynamicResultSetHandler;
 import camp.nextstep.jdbc.core.JdbcTemplate;
 import com.interface21.beans.factory.annotation.Autowired;
 import com.interface21.context.stereotype.Repository;
+import java.sql.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,12 @@ public class UserDao {
   public void update(final User user) {
     final var sql = "UPDATE users SET account = ?, password = ?, email = ? WHERE id = ?";
     jdbcTemplate.update(sql, user.getAccount(), user.getPassword(), user.getEmail(), user.getId());
+  }
+
+  public void update(final Connection connection, final User user) {
+    final var sql = "UPDATE users SET account = ?, password = ?, email = ? WHERE id = ?";
+    jdbcTemplate.update(connection, sql, user.getAccount(), user.getPassword(), user.getEmail(),
+        user.getId());
   }
 
   public List<User> findAll() {
