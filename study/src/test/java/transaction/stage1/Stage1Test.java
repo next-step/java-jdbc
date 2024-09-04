@@ -6,11 +6,13 @@ import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
-import transaction.DatabasePopulatorUtils;
 import transaction.RunnableWrapper;
 
 import javax.sql.DataSource;
@@ -47,7 +49,9 @@ class Stage1Test {
 
     private void setUp(final DataSource dataSource) {
         this.dataSource = dataSource;
-        DatabasePopulatorUtils.execute(dataSource);
+        final var populator = new ResourceDatabasePopulator();
+        populator.addScript(new ClassPathResource("schema.sql"));
+        DatabasePopulatorUtils.execute(populator, dataSource);
         this.userDao = new UserDao(dataSource);
     }
 
